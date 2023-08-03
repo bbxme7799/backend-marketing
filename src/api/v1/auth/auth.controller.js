@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import * as jwt from "jsonwebtoken";
 const prisma = new PrismaClient();
 import bcrypt from "bcryptjs";
+import config from "../../../config/index.js";
 import { BadRequestException } from "../../../exceptions/bad-request.exception.js";
 
 export const singup = async (req, res, next) => {
@@ -31,9 +32,9 @@ export const singup = async (req, res, next) => {
       {
         id: result.id,
         email: result.email,
-        isAdmin: false,
+        role: result.role,
       },
-      process.env.JWT_KEY
+      config.jwtSecretKey
     );
 
     req.session = {
@@ -68,9 +69,9 @@ export const signin = async (req, res, next) => {
       {
         id: eUser.id,
         email: eUser.email,
-        isAdmin: false,
+        role: result.role,
       },
-      process.env.JWT_KEY
+      config.jwtSecretKey
     );
 
     req.session = {
@@ -94,5 +95,3 @@ export const signout = async (req, res, next) => {
     next(error);
   }
 };
-
-

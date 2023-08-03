@@ -1,5 +1,5 @@
 export class ForbiddenRequestException extends Error {
-  statusCode = 404;
+  statusCode = 403;
   constructor() {
     super("Forbidden resource.");
   }
