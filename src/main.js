@@ -8,10 +8,12 @@ import { NotFoundRequestException } from "./exceptions/not-found-request.excepti
 import { errorHandlerMiddleware } from "./middlewares/error-handler.middleware.js";
 import { resetProductSchedule } from "./schedules/product.schedule.js";
 import { resetUSDSchedule } from "./schedules/usd.schedule.js";
+import { PassportGoogle } from "./helpers/passports/google.passport.js";
 
 const app = express();
-// resetProductSchedule();
-// resetUSDSchedule();
+resetProductSchedule();
+resetUSDSchedule();
+PassportGoogle();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));

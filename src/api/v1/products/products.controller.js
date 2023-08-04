@@ -1,45 +1,40 @@
+import { PrismaClient } from "@prisma/client";
 
-
-export const singup = async (req, res, next) => {
-    try {
-      const { username, email, password } = req.body;
-  
-      const eUser = await prisma.user.findUnique({
-        where: { email: email },
-      });
-  
-      if (eUser) {
-        throw new BadRequestException("Email already used.");
-      }
-  
-      const salt = bcrypt.genSaltSync(10);
-      const hash = bcrypt.hashSync(password, salt);
-  
-      const result = await prisma.user.create({
-        data: {
-          username: username,
-          email: email,
-          password: hash,
+const prisma = new PrismaClient();
+export const getAllProducts = async (req, res, next) => {
+  try {
+    const { keyword, category, page, per_page } = req.query;
+    const products = await prisma.product.findMany({
+      where: {
+        name: {
+          contains: keyword,
         },
-      });
-  
-      const userJwt = jwt.sign(
-        {
-          id: result.id,
-          email: result.email,
-          isAdmin: false,
+        category: {
+          contains: category,
         },
-        process.env.JWT_KEY
-      );
-  
-      req.session = {
-        jwt: userJwt,
-      };
-      const { password: _, ...newObj } = result;
-      res.status(201);
-    } catch (error) {
-      console.log(error);
-      next(error);
-    }
-  };
-  
+      },
+      skip: (page - 1) * per_page,
+      take: per_page,
+    });
+    const total = await prisma.product.count({
+      where: {
+        name: {
+          contains: keyword,
+        },
+        category: {
+          contains: category,
+        },
+      },
+    });
+    res.json({
+      data: products,
+      page,
+      per_page,
+      total_page: Math.ceil(total / per_page),
+      total,
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};

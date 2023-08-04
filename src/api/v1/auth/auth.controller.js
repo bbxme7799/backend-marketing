@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import * as jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 const prisma = new PrismaClient();
 import bcrypt from "bcryptjs";
 import config from "../../../config/index.js";
@@ -9,7 +9,7 @@ export const singup = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
 
-    const eUser = await prisma.user.findUnique({
+    const eUser = await prisma.user.findFirst({
       where: { email: email },
     });
 
@@ -41,7 +41,75 @@ export const singup = async (req, res, next) => {
       jwt: userJwt,
     };
     const { password: _, ...newObj } = result;
-    res.status(201);
+    res.status(201).json({});
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export const googleAuth = async (req, res, next) => {
+  try {
+    const { id, emails, photos, displayName } = req.user;
+
+    const existingAccount = await prisma.user.findFirst({
+      where: { google_id: id },
+    });
+    if (!existingAccount && emails && emails.length > 0) {
+      const existingEmail = await prisma.user.findFirst({
+        where: { email: emails[0].value },
+      });
+      if (existingEmail) {
+        console.log("error case");
+        res.redirect(
+          `http://localhost:3000/signin?error=${encodeURIComponent(
+            "Incorrect_Email"
+          )}`
+        );
+        return;
+      } else {
+        const created = await prisma.user.create({
+          data: {
+            username: displayName,
+            email: emails[0].value,
+            google_id: id,
+          },
+        });
+        const userJwt = jwt.sign(
+          {
+            id: created.id,
+            email: created.email,
+            role: created.role,
+          },
+          config.jwtSecretKey
+        );
+
+        req.session = {
+          jwt: userJwt,
+        };
+        res.redirect(`http://localhost:3000/`);
+        //save and create account
+        return;
+      }
+    }
+
+    if (existingAccount) {
+      console.log(existingAccount);
+      const userJwt = jwt.sign(
+        {
+          id: existingAccount.id,
+          email: existingAccount.email,
+          role: existingAccount.role,
+        },
+        config.jwtSecretKey
+      );
+
+      req.session = {
+        jwt: userJwt,
+      };
+      res.redirect(`http://localhost:3000/`);
+      return;
+    }
   } catch (error) {
     console.log(error);
     next(error);
@@ -79,7 +147,7 @@ export const signin = async (req, res, next) => {
     };
 
     const { password: _, ...newObj } = eUser;
-    res.status(200);
+    res.status(200).json({});
   } catch (error) {
     console.log(error);
     next(error);

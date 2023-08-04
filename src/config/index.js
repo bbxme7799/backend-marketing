@@ -11,9 +11,10 @@ const envVarsSchema = joi
       .valid("production", "development", "test")
       .required(),
     PORT: joi.number().positive().required(),
-
     DATABASE_URL: joi.string().uri().required(),
     JWT_SECRET_KEY: joi.string().required(),
+    GOOGLE_CLIENT_ID: joi.string().required(),
+    GOOGLE_CLIENT_SECRET: joi.string().required(),
   })
   .unknown();
 
@@ -30,4 +31,6 @@ export default {
   port: envVars.PORT,
   databaseUrl: envVars.DATABASE_URL,
   jwtSecretKey: envVars.JWT_SECRET_KEY,
+  googleClientId: envVars.GOOGLE_CLIENT_ID,
+  googleClientSecret: envVars.GOOGLE_CLIENT_SECRET,
 };

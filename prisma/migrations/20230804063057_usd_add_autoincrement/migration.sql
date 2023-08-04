@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `usd_rate` MODIFY `id` INTEGER NOT NULL AUTO_INCREMENT;
