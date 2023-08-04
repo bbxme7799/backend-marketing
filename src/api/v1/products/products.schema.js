@@ -12,3 +12,10 @@ export const ProductFilter = z.object({
     z.number().positive().max(200)
   ),
 });
+
+export const ProdIdSchema = z.object({
+  prodId: z.preprocess(
+    (a) => parseInt(z.string().parse(a)),
+    z.number().positive()
+  ),
+});

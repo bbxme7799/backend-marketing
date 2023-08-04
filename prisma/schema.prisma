@@ -12,31 +12,32 @@ datasource db {
 }
 
 model User {
-  id         Int      @id @default(autoincrement())
-  google_id  String?  @db.VarChar(255)
-  username   String?  @db.VarChar(50)
-  password   String?  @db.VarChar(255)
-  email      String?  @db.VarChar(255)
-  role       Int      @default(0)
-  created_at DateTime @default(now()) @db.Timestamp(6)
-  updated_at DateTime @updatedAt
+  id         Int        @id @default(autoincrement())
+  google_id  String?    @db.VarChar(255)
+  username   String?    @db.VarChar(50)
+  password   String?    @db.VarChar(255)
+  email      String?    @db.VarChar(255)
+  role       Int        @default(0)
+  created_at DateTime   @default(now()) @db.Timestamp(6)
+  updated_at DateTime   @updatedAt
+  orders     Order[]
+  cart_items CartItem[]
 }
 
 model Product {
-  service          Int     @id
-  category         String  @db.VarChar(255)
-  name             String  @db.VarChar(255)
-  description      String  @db.Text
+  service          Int        @id
+  category         String     @db.VarChar(255)
+  name             String     @db.VarChar(255)
+  description      String     @db.Text
   min              Int
   max              Int
   step             Int
-  rate             Decimal @default(0.00)
-  type             String  @db.VarChar(50)
-  average_delivery String  @db.VarChar(255)
+  rate             Decimal    @default(0.00)
+  type             String     @db.VarChar(50)
+  average_delivery String     @db.VarChar(255)
   dripfeed         Boolean
   refill           Boolean
-
-
+  cart_items       CartItem[]
 
   @@map("product")
 }
@@ -59,4 +60,20 @@ model Category {
 
   @@fulltext([name])
   @@map("category")
+}
+
+model Order {
+  id      Int  @id @default(autoincrement())
+  user_id Int
+  user    User @relation(fields: [user_id], references: [id])
+}
+
+model CartItem {
+  id         Int     @id @default(autoincrement())
+  user_id    Int
+  user       User    @relation(fields: [user_id], references: [id])
+  url        String
+  quantity   Int     @default(0)
+  product_id Int
+  product    Product @relation(fields: [product_id], references: [service], onDelete: NoAction)
 }
