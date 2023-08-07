@@ -120,7 +120,7 @@ export const signin = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    const eUser = await prisma.user.findUnique({
+    const eUser = await prisma.user.findFirst({
       where: { email: email },
     });
 
