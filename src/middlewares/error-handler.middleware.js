@@ -1,5 +1,5 @@
 export const errorHandlerMiddleware = (err, req, res, next) => {
-  console.log(err)
+  console.log(err);
   if (err instanceof Error) {
     return res.status(err.statusCode).send({ error: err?.serializeError() });
   }

@@ -13,7 +13,7 @@ router.get(
   "/google/callback",
   passport.authenticate("google", {
     session: false,
-    failureRedirect: "http://localhost:3000/",
+    failureRedirect: "http://localhost:8000/",
   }),
   googleAuth
 );

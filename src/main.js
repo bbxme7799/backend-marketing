@@ -1,4 +1,5 @@
 import express from "express";
+import cors from "cors";
 import bodyParser from "body-parser";
 import cookieSession from "cookie-session";
 import config from "./config/index.js";
@@ -23,6 +24,14 @@ app.use(
     secure: false,
   })
 );
+
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
+
 app.use("/api", api);
 app.all("*", async (req, res, next) => {
   try {
