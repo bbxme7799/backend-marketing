@@ -4,6 +4,7 @@ import cookieSession from "cookie-session";
 import config from "./config/index.js";
 import morgan from "morgan";
 import api from "./api/v1/index.js";
+import cors from "cors";
 import { NotFoundRequestException } from "./exceptions/not-found-request.exception.js";
 import { errorHandlerMiddleware } from "./middlewares/error-handler.middleware.js";
 import { resetProductSchedule } from "./schedules/product.schedule.js";
@@ -17,6 +18,12 @@ PassportGoogle();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));
+app.use(
+  cors({
+    origin: "http://localhost:3000/",
+    credentials: true,
+  })
+);
 app.use(
   cookieSession({
     signed: false,
