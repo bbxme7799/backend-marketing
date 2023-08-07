@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import bodyParser from "body-parser";
 import cookieSession from "cookie-session";
 import config from "./config/index.js";

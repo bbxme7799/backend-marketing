@@ -137,7 +137,7 @@ export const signin = async (req, res, next) => {
       {
         id: eUser.id,
         email: eUser.email,
-        role: result.role,
+        role: eUser.role,
       },
       config.jwtSecretKey
     );
