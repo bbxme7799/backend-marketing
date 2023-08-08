@@ -1,4 +1,4 @@
-import * as jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 import config from "../config/index.js";
 import { NotAuthorizeRequestException } from "../exceptions/not-authorize-request.exception.js";
 export const jwtAuthMiddleware = (req, res, next) => {

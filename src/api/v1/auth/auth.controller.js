@@ -147,7 +147,7 @@ export const signin = async (req, res, next) => {
     };
 
     const { password: _, ...newObj } = eUser;
-    res.status(200).json({});
+    res.status(200).json({message:"success"});
   } catch (error) {
     console.log(error);
     next(error);
