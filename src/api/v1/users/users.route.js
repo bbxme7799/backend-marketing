@@ -4,6 +4,6 @@ import { me } from "./users.controller.js";
 
 const router = express.Router();
 
-router.get("/", jwtAuthMiddleware, me);
+router.get("/me", jwtAuthMiddleware, me);
 
 export { router as usersRoute };
