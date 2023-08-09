@@ -3,7 +3,8 @@ import axios from "axios";
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 export const resetProductSchedule = async () => {
-  cron.schedule("*/1 * * * *", async () => {
+  // cron.schedule("*/1 * * * *", async () => {
+  cron.schedule("0 0 * * *", async () => {
     try {
       console.log("query product");
       const response = await axios.get(

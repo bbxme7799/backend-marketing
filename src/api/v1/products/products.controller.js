@@ -6,24 +6,54 @@ export const getAllProducts = async (req, res, next) => {
     const { keyword, category, page, per_page } = req.query;
     const products = await prisma.product.findMany({
       where: {
-        name: {
-          contains: keyword,
-        },
-        category: {
-          contains: category,
-        },
+        AND: [
+          {
+            OR: [
+              {
+                name: {
+                  contains: keyword,
+                },
+              },
+              {
+                category: {
+                  contains: keyword,
+                },
+              },
+            ],
+          },
+          {
+            category: {
+              contains: category,
+            },
+          },
+        ],
       },
       skip: (page - 1) * per_page,
       take: per_page,
     });
     const total = await prisma.product.count({
       where: {
-        name: {
-          contains: keyword,
-        },
-        category: {
-          contains: category,
-        },
+        AND: [
+          {
+            OR: [
+              {
+                name: {
+                  contains: keyword,
+                },
+              },
+              {
+                category: {
+                  contains: keyword,
+                },
+              },
+            ],
+          },
+          {
+            category: {
+              contains: category,
+            },
+          },
+        ],
       },
     });
     res.json({
