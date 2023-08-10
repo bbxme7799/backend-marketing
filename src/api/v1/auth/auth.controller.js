@@ -8,7 +8,6 @@ import { BadRequestException } from "../../../exceptions/bad-request.exception.j
 export const singup = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
-
     const eUser = await prisma.user.findFirst({
       where: { email: email },
     });
@@ -23,6 +22,8 @@ export const singup = async (req, res, next) => {
     const result = await prisma.user.create({
       data: {
         username: username,
+        firstname: firstname,
+        surname: surname,
         email: email,
         password: hash,
       },
