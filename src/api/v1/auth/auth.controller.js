@@ -22,8 +22,6 @@ export const singup = async (req, res, next) => {
     const result = await prisma.user.create({
       data: {
         username: username,
-        firstname: firstname,
-        surname: surname,
         email: email,
         password: hash,
       },
