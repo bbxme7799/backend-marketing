@@ -74,7 +74,7 @@ export const editCartItem = async (req, res, next) => {
     if (!cartItem) throw new BadRequestException("Item not exist");
     const isDuplicate = cartItems.some(
       (tmpCartItem) =>
-        tmpCartItem.id !== id &&
+        tmpCartItem.id !== itemId &&
         tmpCartItem.product_id === cartItem.product_id &&
         tmpCartItem.url === url
     );
