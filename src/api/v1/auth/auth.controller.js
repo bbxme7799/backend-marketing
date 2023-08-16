@@ -107,10 +107,8 @@ export const googleAuth = async (req, res, next) => {
       };
 
       if (existingAccount.role === 1) {
-        // ถ้าบทบาทเป็น 1 ให้เปลี่ยนเส้นทางไปหน้า /admin
         res.redirect(`http://localhost:3000/admin`);
       } else {
-        // ถ้าบทบาทไม่ใช่ 1 ให้เปลี่ยนเส้นทางไปหน้าหลัก
         res.redirect(`http://localhost:3000/`);
       }
       return;
