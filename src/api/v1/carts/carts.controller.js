@@ -19,11 +19,13 @@ export const addToCart = async (req, res, next) => {
       where: { user_id: id },
     });
     const cartItem = cartItems.find(
-      (cartItem) => cartItem.product_id === id && cartItem.url === url
+      (cartItem) => cartItem.product_id === prodId && cartItem.url === url
     );
     if (cartItem) {
+      console.log(cartItem);
       const newQuantity = quantity + cartItem.quantity;
       const mod = newQuantity % product.step;
+      console.log(newQuantity, mod);
       if (mod !== 0) throw new BadRequestException("Invalid quantity");
       if (newQuantity > product.max || newQuantity < product.min)
         throw new BadRequestException("Out of stock");
@@ -40,7 +42,16 @@ export const addToCart = async (req, res, next) => {
     if (quantity > product.max || quantity < product.min)
       throw new BadRequestException("Out of stock");
     const newItem = await prisma.cartItem.create({
-      data: { url, quantity },
+      data: {
+        url,
+        quantity,
+        product: {
+          connect: { service: product.service },
+        },
+        user: {
+          connect: { id },
+        },
+      },
     });
     res.status(201).json(newItem);
     return;
@@ -60,9 +71,10 @@ export const editCartItem = async (req, res, next) => {
     });
 
     const cartItem = cartItems.find((cartItem) => cartItem.id === itemId);
-    if (!cartItem) throw new BadRequestException("Cart item not exist");
+    if (!cartItem) throw new BadRequestException("Item not exist");
     const isDuplicate = cartItems.some(
       (tmpCartItem) =>
+        tmpCartItem.id !== id &&
         tmpCartItem.product_id === cartItem.product_id &&
         tmpCartItem.url === url
     );
@@ -92,7 +104,10 @@ export const removeCartItem = async (req, res, next) => {
   try {
     const { id } = req.currentUser;
     const { itemId } = req.params;
-
+    const item = await prisma.cartItem.findUnique({
+      where: { id: itemId, user_id: id },
+    });
+    if (!item) throw new BadRequestException("Item not found");
     const deleted = await prisma.cartItem.delete({
       where: { user_id: id, id: itemId },
     });
@@ -126,8 +141,8 @@ export const getCartItems = async (req, res, next) => {
       .filter(
         (cartItem) =>
           !cartItem.product ||
-          cartItem.quantity > carItems.product.max ||
-          cartItem.quantity < carItems.product.min
+          cartItem.quantity > cartItem.product.max ||
+          cartItem.quantity < cartItem.product.min
       )
       .map((cartItem) => cartItem.id);
     if (idToDelete.length > 0) {

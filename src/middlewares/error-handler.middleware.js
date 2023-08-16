@@ -1,6 +1,8 @@
+import { BaseErrorException } from "../exceptions/base-error.exception.js";
+
 export const errorHandlerMiddleware = (err, req, res, next) => {
   console.log(err);
-  if (err instanceof Error) {
+  if (err instanceof BaseErrorException) {
     console.log(
       "🚀 ~ file: error-handler.middleware.js:4 ~ errorHandlerMiddleware ~ err:",
       err

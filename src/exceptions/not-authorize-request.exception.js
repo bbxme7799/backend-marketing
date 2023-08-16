@@ -1,4 +1,6 @@
-export class NotAuthorizeRequestException extends Error {
+import { BaseErrorException } from "./base-error.exception.js";
+
+export class NotAuthorizeRequestException extends BaseErrorException {
   statusCode = 401;
   constructor() {
     super("Not authorize.");

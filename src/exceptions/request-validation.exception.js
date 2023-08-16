@@ -1,4 +1,6 @@
-export class RequestValidationException extends Error {
+import { BaseErrorException } from "./base-error.exception.js";
+
+export class RequestValidationException extends BaseErrorException {
   statusCode = 400;
   errors
   constructor(errors) {
