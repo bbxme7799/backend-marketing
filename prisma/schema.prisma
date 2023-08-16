@@ -22,6 +22,7 @@ model User {
   updated_at DateTime   @updatedAt
   orders     Order[]
   cart_items CartItem[]
+  Post       Post[]
 }
 
 model Product {
@@ -76,4 +77,14 @@ model CartItem {
   quantity   Int     @default(0)
   product_id Int
   product    Product @relation(fields: [product_id], references: [service], onDelete: NoAction)
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  title     String   @db.VarChar(255)
+  content   String   @db.Text
+  imageUrl  String   @db.VarChar(255)
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  Int
+  createdAt DateTime @default(now()) @db.Timestamp(6)
 }
