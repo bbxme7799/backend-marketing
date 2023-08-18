@@ -7,11 +7,13 @@ export const createCategory = async (req, res, next) => {
   try {
     const { name } = req.body;
 
-    const category = await prisma.category.findUnique({
-      where: { name },
+    const existingCategory = await prisma.category.findFirst({
+      where: { name }, // Query by name instead of findUnique
     });
 
-    if (category) throw new BadRequestException("Category already exist.");
+    if (existingCategory) {
+      throw new BadRequestException("Category already exists.");
+    }
 
     const result = await prisma.category.create({
       data: {
@@ -25,6 +27,7 @@ export const createCategory = async (req, res, next) => {
     next(error);
   }
 };
+
 export const editCategory = async (req, res, next) => {
   try {
     const { name } = req.body;

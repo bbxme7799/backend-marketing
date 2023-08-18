@@ -36,7 +36,7 @@ router.put(
 router.delete(
   "/:catId",
   validateRequestMiddleware({
-    body: CategoySchema,
+    // body: CategoySchema,
     params: CategoryIdSchema,
   }),
   deleteCategory
