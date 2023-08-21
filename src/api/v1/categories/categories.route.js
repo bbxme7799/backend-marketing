@@ -1,4 +1,5 @@
 import express from "express";
+import { roleMiddleware } from "../../../middlewares/roleMiddleware.js";
 
 import { validateRequestMiddleware } from "../../../middlewares/validate-request.middleware.js";
 
@@ -13,6 +14,8 @@ import {
   editCategory,
   getAllCategories,
 } from "./categories.controller.js";
+
+import { jwtAuthMiddleware } from "../../../middlewares/jwt-auth.middleware.js";
 const router = express.Router();
 
 router.get(
@@ -22,11 +25,15 @@ router.get(
 );
 router.post(
   "/",
+  jwtAuthMiddleware,
+  roleMiddleware(1),
   validateRequestMiddleware({ body: CategoySchema }),
   createCategory
 );
 router.put(
   "/:catId",
+  jwtAuthMiddleware,
+  roleMiddleware(1),
   validateRequestMiddleware({
     body: CategoySchema,
     params: CategoryIdSchema,
@@ -35,6 +42,8 @@ router.put(
 );
 router.delete(
   "/:catId",
+  jwtAuthMiddleware,
+  roleMiddleware(1),
   validateRequestMiddleware({
     // body: CategoySchema,
     params: CategoryIdSchema,

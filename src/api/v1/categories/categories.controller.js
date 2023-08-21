@@ -55,6 +55,7 @@ export const editCategory = async (req, res, next) => {
 };
 export const deleteCategory = async (req, res, next) => {
   try {
+    const { id } = req.currentUser;
     const { catId } = req.params;
 
     const category = await prisma.category.findUnique({

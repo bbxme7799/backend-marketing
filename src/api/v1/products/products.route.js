@@ -7,6 +7,9 @@ import {
 } from "./products.controller.js";
 import { ProductFilter } from "./products.schema.js";
 import { validateRequestMiddleware } from "../../../middlewares/validate-request.middleware.js";
+import { jwtAuthMiddleware } from "../../../middlewares/jwt-auth.middleware.js";
+import { roleMiddleware } from "../../../middlewares/roleMiddleware.js";
+
 const router = express.Router();
 
 router.get(
@@ -16,10 +19,10 @@ router.get(
 );
 
 // Edit a product
-router.put("/:id", editProduct);
+router.put("/:id", jwtAuthMiddleware, roleMiddleware(1), editProduct);
 
 // Delete a product
-router.delete("/:id", deleteProduct);
-router.post("/", createProduct);
+router.delete("/:id", jwtAuthMiddleware, roleMiddleware(1), deleteProduct);
+router.post("/", jwtAuthMiddleware, roleMiddleware(1), createProduct);
 
 export { router as productsRoute };
