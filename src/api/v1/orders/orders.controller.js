@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { BadRequestException } from "../../../exceptions/bad-request.exception.js";
+import axios from "axios";
 
 const prisma = new PrismaClient();
 export const ordering = async (req, res, next) => {
@@ -12,23 +13,37 @@ export const ordering = async (req, res, next) => {
         product: true,
       },
     });
+
     if (!items || items.length <= 0)
       throw new BadRequestException("No item in cart.");
+    //cut balance
     const orderItems = await Promise.all(
       items.map(async (item, index) => {
         try {
-          if (index === 0) {
-            // request here
+          const response = await axios.get(
+            `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=add&service=${item.product_id}&link=${item.url}&quantity=${item.quantity}`
+          );
 
-            throw new Error("tests");
-          } else {
-            return {
-              ...item,
-              order: Math.floor(Math.random() * 1000),
-              error: false,
-            };
-          }
+          const { order, error } = response.data;
+          console.log("order=>", response.data);
+          return {
+            ...item,
+            order,
+            error: error ? true : false,
+          };
+          // if (index === 0) {
+          //   // request here
+
+          //   throw new Error("tests");
+          // } else {
+          //   return {
+          //     ...item,
+          //     order: Math.floor(Math.random() * 1000),
+          //     error: false,
+          //   };
+          // }
         } catch (error) {
+          console.log(error);
           return { ...item, error: true };
         }
       })
@@ -36,9 +51,12 @@ export const ordering = async (req, res, next) => {
     console.log("orderItems=> ", orderItems);
     const total = orderItems.reduce(
       (prev, acc) =>
-        acc.error ? 0 + prev : (acc.product.rate / 1000) * acc.quantity + prev,
+        acc.error
+          ? 0 + prev
+          : ((acc.product.rate * 1.5) / 1000) * acc.quantity + prev,
       0
     );
+
     const order = await prisma.order.create({
       data: {
         user_id: id,
@@ -49,8 +67,10 @@ export const ordering = async (req, res, next) => {
               ref_id: orderItem?.order ? orderItem?.order : null,
               service_name: orderItem.product.name,
               is_paid: !orderItem.error,
-              price: (orderItem.product.rate / 1000) * orderItem.quantity,
+              price:
+                ((orderItem.product.rate * 1.5) / 1000) * orderItem.quantity,
               quantity: orderItem.quantity,
+              status: orderItem.error?"Canceled":"Pending",
             })),
           },
         },
@@ -77,9 +97,13 @@ export const getOneMyOrder = async (req, res, next) => {
       orderItems.map(async (orderItem) => {
         if (orderItem.ref_id === null && !orderItem.is_paid) return orderItem;
         //request here to get status and update
+        const response = await axios.get(
+          `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=status&order=${orderItem.ref_id}`
+        );
+          const { status } = response.data;
         return await prisma.orderItem.update({
           where: { id: orderItem.id },
-          data: { status: "" },
+          data: { status: status},
         });
       })
     );
@@ -122,11 +146,17 @@ export const getMyOrders = async (req, res, next) => {
 
     const newOrderItems = await Promise.all(
       orderItems.map(async (orderItem) => {
-        if (orderItem.ref_id === null && !orderItem.is_paid) return orderItem;
+        // if (orderItem.ref_id === null && !orderItem.is_paid) return orderItem;
+        if (orderItem.ref_id === null || !orderItem.is_paid) return orderItem;
         //request here to get status and update
+        const response = await axios.get(
+          `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=status&order=${orderItem.ref_id}`
+        );
+        const { status } = response.data;
+        // refund  refund credit to customer
         return await prisma.orderItem.update({
           where: { id: orderItem.id },
-          data: { status: "" },
+          data: { status: status },
         });
       })
     );

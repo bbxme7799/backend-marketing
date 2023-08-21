@@ -13,7 +13,7 @@ export const refundSchedule = async () => {
       });
       const newOrderItems = await Promise.all(
         orderItems.map(async (orderItem) => {
-          if (orderItem.ref_id === null && !orderItem.is_paid) return orderItem;
+          if (orderItem.ref_id === null || !orderItem.is_paid) return orderItem;
           //request here to get status and update
           return await prisma.orderItem.update({
             where: { id: orderItem.id },
