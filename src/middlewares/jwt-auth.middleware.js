@@ -14,4 +14,3 @@ export const jwtAuthMiddleware = (req, res, next) => {
     throw new NotAuthorizeRequestException();
   }
 };
-

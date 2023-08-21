@@ -135,6 +135,7 @@ export const getCartItems = async (req, res, next) => {
             service: true,
           },
         },
+        // product: true
       },
     });
     const idToDelete = carItems
