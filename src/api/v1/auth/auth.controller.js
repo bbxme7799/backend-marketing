@@ -50,7 +50,6 @@ export const singup = async (req, res, next) => {
     next(error);
   }
 };
-
 export const googleAuth = async (req, res, next) => {
   try {
     const { id, emails, photos, displayName } = req.user;
@@ -172,7 +171,6 @@ export const getNonce = async (req, res, next) => {
     next(error);
   }
 };
-
 export const signin = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -211,7 +209,6 @@ export const signin = async (req, res, next) => {
     next(error);
   }
 };
-
 export const signout = async (req, res, next) => {
   try {
     req.session = null;
