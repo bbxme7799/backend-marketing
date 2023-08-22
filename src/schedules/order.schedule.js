@@ -15,6 +15,7 @@ export const refundSchedule = async () => {
               { status: "Canceled", is_paid: true },
               { status: "Completed", is_paid: true },
               { status: "Partial", is_paid: true },
+              { status: "Refund", is_paid: true },
             ],
             ref_id: null,
           },
@@ -46,7 +47,7 @@ export const refundSchedule = async () => {
         where: {
           OR: [
             { status: "Canceled", is_paid: true },
-            { status: "Completed", is_paid: true },
+            // { status: "Completed", is_paid: true },
             { status: "Partial", is_paid: true },
           ],
           NOT: { ref_id: null },
@@ -60,6 +61,7 @@ export const refundSchedule = async () => {
           return await prisma.orderItem.update({
             where: { id: item.id },
             data: {
+              status: "Refund",
               order: {
                 update: {
                   data: { total: { decrement: item.price } },

@@ -25,18 +25,21 @@ export const transferEvent = () => {
       console.log(payload[0], payload[1], payload[2]);
       const busdRate = await prisma.uSD_rate.findFirst();
       console.log(busdRate.rate, Number(payload[2]));
-      //   const data: { THB: number } = await (await axios.get("https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=THB")).data
-      //   const rateInTHB = data.THB;
       const rateInTHB = busdRate.rate;
-      //   const rate = (1 * 10 ** 18) / rateInTHB;
-      //   const toWei = rate * priceTHB;
       const rate2 = rateInTHB / (1 * 10 ** 18);
       const bath = Number(payload[2]) * rate2;
 
-      //   return {
-      // wei: Math.ceil(toWei),
-      //   };
       console.log({ bath });
+      const user = await prisma.user.update({
+        where: { address_for_paid: payload[0] },
+        data: { balance: { increment: bath } },
+      });
+      if (user) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { address_for_paid: null },
+        });
+      }
       console.log(event);
     }
   );

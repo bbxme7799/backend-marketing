@@ -7,6 +7,10 @@ export const ordering = async (req, res, next) => {
   try {
     const { id } = req.currentUser;
 
+    const user = await prisma.user.findUnique({ where: { id } });
+
+    if (!user) throw new BadRequestException("User not foud.");
+
     const items = await prisma.cartItem.findMany({
       where: { user_id: id },
       include: {
@@ -17,6 +21,14 @@ export const ordering = async (req, res, next) => {
     if (!items || items.length <= 0)
       throw new BadRequestException("No item in cart.");
     //cut balance
+    const totalUnCut = items.reduce(
+      (prev, acc) => ((acc.product.rate * 1.5) / 1000) * acc.quantity + prev,
+      0
+    );
+
+    if (totalUnCut > user.balance || user.balance - totalUnCut < 0)
+      throw new BadRequestException("Insufficient balance");
+
     const orderItems = await Promise.all(
       items.map(async (item, index) => {
         try {
@@ -25,29 +37,19 @@ export const ordering = async (req, res, next) => {
           );
 
           const { order, error } = response.data;
-          console.log("order=>", response.data);
+          // console.log("order=>", response.data);
           return {
             ...item,
             order,
             error: error ? true : false,
           };
-          // if (index === 0) {
-          //   // request here
-
-          //   throw new Error("tests");
-          // } else {
-          //   return {
-          //     ...item,
-          //     order: Math.floor(Math.random() * 1000),
-          //     error: false,
-          //   };
-          // }
         } catch (error) {
           console.log(error);
           return { ...item, error: true };
         }
       })
     );
+    
     console.log("orderItems=> ", orderItems);
     const total = orderItems.reduce(
       (prev, acc) =>
@@ -57,25 +59,50 @@ export const ordering = async (req, res, next) => {
       0
     );
 
-    const order = await prisma.order.create({
+    const order = await prisma.user.update({
+      where: { id: user.id },
       data: {
-        user_id: id,
-        total,
-        order_items: {
-          createMany: {
-            data: orderItems.map((orderItem) => ({
-              ref_id: orderItem?.order ? orderItem?.order : null,
-              service_name: orderItem.product.name,
-              is_paid: !orderItem.error,
-              price:
-                ((orderItem.product.rate * 1.5) / 1000) * orderItem.quantity,
-              quantity: orderItem.quantity,
-              status: orderItem.error?"Canceled":"Pending",
-            })),
+        balance: { decrement: total },
+        orders: {
+          create: {
+            order_items: {
+              createMany: {
+                data: orderItems.map((orderItem) => ({
+                  ref_id: orderItem?.order ? orderItem?.order : null,
+                  service_name: orderItem.product.name,
+                  is_paid: !orderItem.error,
+                  price:
+                    ((orderItem.product.rate * 1.5) / 1000) *
+                    orderItem.quantity,
+                  quantity: orderItem.quantity,
+                  status: orderItem.error ? "Canceled" : "Pending",
+                })),
+              },
+            },
           },
         },
       },
     });
+
+    // const order = await prisma.order.create({
+    //   data: {
+    //     user_id: id,
+    //     total,
+    //     order_items: {
+    //       createMany: {
+    //         data: orderItems.map((orderItem) => ({
+    //           ref_id: orderItem?.order ? orderItem?.order : null,
+    //           service_name: orderItem.product.name,
+    //           is_paid: !orderItem.error,
+    //           price:
+    //             ((orderItem.product.rate * 1.5) / 1000) * orderItem.quantity,
+    //           quantity: orderItem.quantity,
+    //           status: orderItem.error ? "Canceled" : "Pending",
+    //         })),
+    //       },
+    //     },
+    //   },
+    // });
     res.json({
       data: order,
     });
@@ -100,10 +127,10 @@ export const getOneMyOrder = async (req, res, next) => {
         const response = await axios.get(
           `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=status&order=${orderItem.ref_id}`
         );
-          const { status } = response.data;
+        const { status } = response.data;
         return await prisma.orderItem.update({
           where: { id: orderItem.id },
-          data: { status: status},
+          data: { status: status },
         });
       })
     );
