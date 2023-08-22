@@ -79,6 +79,7 @@ export const googleAuth = async (req, res, next) => {
             id: created.id,
             email: created.email,
             role: created.role,
+            is_banned: created.is_banned,
           },
           config.jwtSecretKey
         );
@@ -86,7 +87,7 @@ export const googleAuth = async (req, res, next) => {
         req.session = {
           jwt: userJwt,
         };
-        res.redirect(`http://localhost:3000/`);
+        res.redirect(`http://localhost:3000/users`);
         //save and create account
         return;
       }
@@ -98,6 +99,7 @@ export const googleAuth = async (req, res, next) => {
           id: existingAccount.id,
           email: existingAccount.email,
           role: existingAccount.role,
+          is_banned: existingAccount.is_banned,
         },
         config.jwtSecretKey
       );
@@ -106,10 +108,14 @@ export const googleAuth = async (req, res, next) => {
         jwt: userJwt,
       };
 
+      if (existingAccount.is_banned) {
+        return res.redirect("http://localhost:3000/suspended");
+      }
+
       if (existingAccount.role === 1) {
         res.redirect(`http://localhost:3000/admin`);
       } else {
-        res.redirect(`http://localhost:3000/`);
+        res.redirect(`http://localhost:3000/users`);
       }
       return;
     }
@@ -141,6 +147,7 @@ export const signin = async (req, res, next) => {
         id: eUser.id,
         email: eUser.email,
         role: eUser.role,
+        is_banned: eUser.is_banned,
       },
       config.jwtSecretKey
     );
