@@ -1,7 +1,18 @@
 import express from "express";
-import { googleAuth, signin, signout, singup } from "./auth.controller.js";
+import {
+  getNonce,
+  googleAuth,
+  metamaskAuth,
+  signin,
+  signout,
+  singup,
+} from "./auth.controller.js";
 import { validateRequestMiddleware } from "../../../middlewares/validate-request.middleware.js";
-import { SigninSchema, SignupSchema } from "./auth.schema.js";
+import {
+  SigninMetamaskSchema,
+  SigninSchema,
+  SignupSchema,
+} from "./auth.schema.js";
 import passport from "passport";
 const router = express.Router();
 
@@ -16,6 +27,12 @@ router.get(
     failureRedirect: "http://localhost:8000/",
   }),
   googleAuth
+);
+router.get("/nonce", getNonce);
+router.post(
+  "/metamask",
+  validateRequestMiddleware({ body: SigninMetamaskSchema }),
+  metamaskAuth
 );
 router.post(
   "/signin",

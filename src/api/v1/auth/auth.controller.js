@@ -4,6 +4,9 @@ const prisma = new PrismaClient();
 import bcrypt from "bcryptjs";
 import config from "../../../config/index.js";
 import { BadRequestException } from "../../../exceptions/bad-request.exception.js";
+import crypto from "crypto";
+import { ethers } from "ethers";
+import { NotAuthorizeRequestException } from "../../../exceptions/not-authorize-request.exception.js";
 
 export const singup = async (req, res, next) => {
   try {
@@ -30,8 +33,9 @@ export const singup = async (req, res, next) => {
     const userJwt = jwt.sign(
       {
         id: result.id,
-        email: result.email,
+        // email: result.email,
         role: result.role,
+        is_banned: result.is_banned,
       },
       config.jwtSecretKey
     );
@@ -77,7 +81,7 @@ export const googleAuth = async (req, res, next) => {
         const userJwt = jwt.sign(
           {
             id: created.id,
-            email: created.email,
+            // email: created.email,
             role: created.role,
             is_banned: created.is_banned,
           },
@@ -97,7 +101,7 @@ export const googleAuth = async (req, res, next) => {
       const userJwt = jwt.sign(
         {
           id: existingAccount.id,
-          email: existingAccount.email,
+          // email: existingAccount.email,
           role: existingAccount.role,
           is_banned: existingAccount.is_banned,
         },
@@ -119,6 +123,50 @@ export const googleAuth = async (req, res, next) => {
       }
       return;
     }
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+export const metamaskAuth = async (req, res, next) => {
+  try {
+    const { signedMessage, message, address } = req.body;
+    let user = await this.usersRepository.findOne({ address });
+    const recoveredAddress = ethers.verifyMessage(message, signedMessage);
+    console.log(recoveredAddress);
+    if (recoveredAddress !== address) {
+      throw new NotAuthorizeRequestException();
+    }
+    if (!user) {
+      user = await prisma.user.create({
+        address,
+      });
+    }
+
+    const userJwt = jwt.sign(
+      {
+        id: user.id,
+        role: user.role,
+        is_banned: user.is_banned,
+      },
+      config.jwtSecretKey
+    );
+
+    req.session = {
+      jwt: userJwt,
+    };
+
+    res.status(200).json({ message: "success" });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+export const getNonce = async (req, res, next) => {
+  try {
+    const nonce = crypto.randomBytes(32).toString("hex");
+    // Return the nonce value as a JSON object in the response body
+    res.json({ nonce });
   } catch (error) {
     console.log(error);
     next(error);
