@@ -9,21 +9,49 @@ export const refundSchedule = async () => {
       console.log("------- start refund schedule -------");
 
       const orderItems = await prisma.orderItem.findMany({
+        where: {
+          NOT: {
+            OR: [
+              { status: "Canceled", is_paid: true },
+              { status: "Completed", is_paid: true },
+              { status: "Partial", is_paid: true },
+            ],
+            ref_id: null,
+          },
+          is_paid: true,
+        },
         //condition for get important status to update
       });
       const newOrderItems = await Promise.all(
         orderItems.map(async (orderItem) => {
           if (orderItem.ref_id === null || !orderItem.is_paid) return orderItem;
           //request here to get status and update
+
+          //request here to get status and update
+          const response = await axios.get(
+            `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=status&order=${orderItem.ref_id}`
+          );
+          const { status } = response.data;
           return await prisma.orderItem.update({
             where: { id: orderItem.id },
-            data: { status: "" },
+            data: { status: status },
           });
         })
       );
-      const refundItems = newOrderItems.filter(
-        (orderItem) => orderItem.status === "ex refund"
-      ); //if refund true
+      // const refundItems = newOrderItems.filter(
+      //   (orderItem) => orderItem.status === "ex refund"
+      // ); //if refund true
+
+      const refundItems = await prisma.orderItem.findMany({
+        where: {
+          OR: [
+            { status: "Canceled", is_paid: true },
+            { status: "Completed", is_paid: true },
+            { status: "Partial", is_paid: true },
+          ],
+          NOT: { ref_id: null },
+        },
+      });
 
       //refund and update balance user here
 
@@ -35,7 +63,7 @@ export const refundSchedule = async () => {
               order: {
                 update: {
                   data: { total: { decrement: item.price } },
-                  // user: { update: {} }, //update balance here
+                  user: { update: { balance: { increment: item.price } } }, //update balance here
                 },
               },
             },
