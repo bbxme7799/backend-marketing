@@ -64,8 +64,12 @@ export const refundSchedule = async () => {
               status: "Refund",
               order: {
                 update: {
-                  data: { total: { decrement: item.price } },
-                  user: { update: { balance: { increment: item.price } } }, //update balance here
+                  data: {
+                    total: { decrement: item.price },
+                    
+                    user: { update: { balance: { increment: item.price } } },
+                  },
+                  // user: { update: { balance: { increment: item.price } } }, //update balance here
                 },
               },
             },
