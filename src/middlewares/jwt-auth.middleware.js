@@ -7,10 +7,10 @@ export const jwtAuthMiddleware = (req, res, next) => {
   }
   try {
     const payload = jwt.verify(req.session.jwt, config.jwtSecretKey);
-    console.log(
-      "🚀 ~ file: jwt-auth.middleware.js:10 ~ jwtAuthMiddleware ~ payload:",
-      payload
-    );
+    // console.log(
+    //   "🚀 ~ file: jwt-auth.middleware.js:10 ~ jwtAuthMiddleware ~ payload:",
+    //   payload
+    // );
 
     if (payload.is_banned) {
       return res
