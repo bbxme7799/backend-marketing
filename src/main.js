@@ -11,12 +11,14 @@ import { resetProductSchedule } from "./schedules/product.schedule.js";
 import { resetUSDSchedule } from "./schedules/usd.schedule.js";
 import { PassportGoogle } from "./helpers/passports/google.passport.js";
 import { transferEvent } from "./events/web3.event.js";
+import { refundSchedule } from "./schedules/order.schedule.js";
 
 const app = express();
 resetProductSchedule();
 resetUSDSchedule();
 PassportGoogle();
 transferEvent();
+refundSchedule();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(morgan("dev"));
