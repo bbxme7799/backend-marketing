@@ -13,6 +13,8 @@ export const me = async (req, res, next) => {
         username: true,
         role: true,
         is_banned: true,
+        address: true,
+        balance: true,
       },
     });
     res.json(result);
