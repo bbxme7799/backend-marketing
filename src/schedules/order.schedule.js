@@ -10,18 +10,6 @@ export const refundSchedule = async () => {
 
       const orderItems = await prisma.orderItem.findMany({
         where: {
-<<<<<<< HEAD
-          NOT: {
-            AND: [
-              { status: "Canceled", is_paid: true },
-              { status: "Completed", is_paid: true },
-              { status: "Partial", is_paid: true },
-              { status: "Refund", is_paid: true },
-            ],
-            ref_id: null,
-          },
-          is_paid: true,
-=======
           AND: [
             {
               NOT: {
@@ -41,7 +29,6 @@ export const refundSchedule = async () => {
               is_paid: true,
             },
           ],
->>>>>>> 6c2332a878cecf0e6f8e3a8f687dbdc9e86e4cc8
         },
         //condition for get important status to update
       });
