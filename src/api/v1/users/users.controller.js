@@ -29,13 +29,13 @@ export const updateUsername = async (req, res, next) => {
     const { newUsername } = req.body;
 
     // Check if the new username is already taken
-    const existingUserWithUsername = await prisma.user.findFirst({
-      where: { username: newUsername },
-    });
+    // const existingUserWithUsername = await prisma.user.findFirst({
+    //   where: { username: newUsername },
+    // });
 
-    if (existingUserWithUsername) {
-      throw new BadRequestException("Username is already taken.");
-    }
+    // if (existingUserWithUsername) {
+    //   throw new BadRequestException("Username is already taken.");
+    // }
 
     const updatedUser = await prisma.user.update({
       where: { id: user?.id },
