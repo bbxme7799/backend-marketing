@@ -130,7 +130,12 @@ export const googleAuth = async (req, res, next) => {
 export const metamaskAuth = async (req, res, next) => {
   try {
     const { signedMessage, message, address } = req.body;
-    let user = await this.usersRepository.findOne({ address });
+    let user = await prisma.user.findFirst({
+      where: { address: address },
+    });
+    // const eUser = await prisma.user.findFirst({
+    //   where: { email: email },
+    // });
     const recoveredAddress = ethers.verifyMessage(message, signedMessage);
     console.log(recoveredAddress);
     if (recoveredAddress !== address) {
@@ -138,7 +143,10 @@ export const metamaskAuth = async (req, res, next) => {
     }
     if (!user) {
       user = await prisma.user.create({
-        address,
+        data: {
+          // แก้ไขตรงนี้เพื่อให้ตรงกับโครงสร้างฐานข้อมูล
+          address: address,
+        },
       });
     }
 
