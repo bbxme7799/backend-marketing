@@ -7,6 +7,7 @@ import { cartsRoute } from "./carts/carts.route.js";
 import { usersRoute } from "./users/users.route.js";
 import { ordersRoute } from "./orders/orders.route.js";
 import { blogRoute } from "./blog/blog.route.js";
+import { toupRouter } from "./topup/topup.route.js";
 
 const router = express.Router();
 
@@ -18,5 +19,6 @@ router.use("/usd", usdRoute);
 router.use("/users", usersRoute);
 router.use("/orders", ordersRoute);
 router.use("/blog", blogRoute);
+router.use("/topup", toupRouter);
 
 export default router;
