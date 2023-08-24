@@ -25,6 +25,7 @@ export const refundSchedule = async () => {
               NOT: { ref_id: null },
             },
             {
+              
               is_paid: true,
             },
           ],
@@ -74,7 +75,6 @@ export const refundSchedule = async () => {
                 update: {
                   data: {
                     total: { decrement: item.price },
-
                     user: { update: { balance: { increment: item.price } } },
                   },
                   // user: { update: { balance: { increment: item.price } } }, //update balance here
