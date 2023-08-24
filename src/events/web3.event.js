@@ -30,8 +30,11 @@ export const transferEvent = () => {
       const bath = Number(payload[2]) * rate2;
 
       console.log({ bath });
-      const user = await prisma.user.update({
+      const eUser = await prisma.user.findFirst({
         where: { address_for_paid: payload[0] },
+      });
+      const user = await prisma.user.update({
+        where: { id: eUser.id },
         data: { balance: { increment: bath } },
       });
       if (user) {
