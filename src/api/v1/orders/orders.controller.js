@@ -49,7 +49,7 @@ export const ordering = async (req, res, next) => {
         }
       })
     );
-    
+
     console.log("orderItems=> ", orderItems);
     const total = orderItems.reduce(
       (prev, acc) =>
@@ -82,6 +82,10 @@ export const ordering = async (req, res, next) => {
           },
         },
       },
+    });
+
+    await prisma.cartItem.deleteMany({
+      where: { user_id: user.id },
     });
 
     // const order = await prisma.order.create({
