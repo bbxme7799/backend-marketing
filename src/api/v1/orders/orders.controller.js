@@ -126,7 +126,12 @@ export const getOneMyOrder = async (req, res, next) => {
 
     const newOrderItems = await Promise.all(
       orderItems.map(async (orderItem) => {
-        if (orderItem.ref_id === null && !orderItem.is_paid) return orderItem;
+        if (
+          orderItem.ref_id === null ||
+          !orderItem.is_paid ||
+          orderItem.status === "Refund"
+        )
+          return orderItem;
         //request here to get status and update
         const response = await axios.get(
           `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=status&order=${orderItem.ref_id}`
@@ -178,7 +183,12 @@ export const getMyOrders = async (req, res, next) => {
     const newOrderItems = await Promise.all(
       orderItems.map(async (orderItem) => {
         // if (orderItem.ref_id === null && !orderItem.is_paid) return orderItem;
-        if (orderItem.ref_id === null || !orderItem.is_paid) return orderItem;
+        if (
+          orderItem.ref_id === null ||
+          !orderItem.is_paid ||
+          orderItem.status === "Refund"
+        )
+          return orderItem;
         //request here to get status and update
         const response = await axios.get(
           `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=status&order=${orderItem.ref_id}`
