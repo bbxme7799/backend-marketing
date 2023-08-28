@@ -234,3 +234,22 @@ export const getMyOrders = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getAllOrders = async (req, res, next) => {
+  try {
+    // ดึงข้อมูล orders พร้อม order_items ที่เกี่ยวข้อง
+    const ordersWithItems = await prisma.order.findMany({
+      include: {
+        order_items: true,
+      },
+    });
+
+    // ส่งข้อมูล orders กลับไปให้ Client
+    res.json({
+      data: ordersWithItems,
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};

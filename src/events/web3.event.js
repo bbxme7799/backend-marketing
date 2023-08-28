@@ -12,7 +12,7 @@ const contractABI = busdContractJson;
 const contract = new ethers.Contract(contractAddress, contractABI, provider);
 
 export const transferEvent = () => {
-  const ownerAddress = "0x57382616659eF9A38100537eE46097a69cD48d90";
+  const ownerAddress = "0xF66D753De15379B0B445df6956356d18A1B47e1F";
 
   contract.on(
     contract.filters.Transfer(null, ownerAddress),
