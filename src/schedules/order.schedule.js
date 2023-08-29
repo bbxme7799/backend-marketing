@@ -65,7 +65,7 @@ export const refundSchedule = async () => {
       });
 
       //refund and update balance user here
-
+      console.log("refundItems =>", refundItems);
       await Promise.all(
         refundItems.map(async (item) => {
           return await prisma.orderItem.update({

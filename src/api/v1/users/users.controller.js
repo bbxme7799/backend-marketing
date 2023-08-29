@@ -28,15 +28,6 @@ export const updateUsername = async (req, res, next) => {
     const user = req.currentUser;
     const { newUsername } = req.body;
 
-    // Check if the new username is already taken
-    // const existingUserWithUsername = await prisma.user.findFirst({
-    //   where: { username: newUsername },
-    // });
-
-    // if (existingUserWithUsername) {
-    //   throw new BadRequestException("Username is already taken.");
-    // }
-
     const updatedUser = await prisma.user.update({
       where: { id: user?.id },
       data: { username: newUsername },
@@ -53,6 +44,27 @@ export const updateUsername = async (req, res, next) => {
     res.json(result);
   } catch (error) {
     next(error);
+  }
+};
+
+export const editBalance = async (req, res, next) => {
+  try {
+    const { userId, newBalance } = req.body;
+
+    // Validate userId and newBalance
+
+    // Update the user's balance
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { balance: newBalance },
+    });
+
+    // Send a success response
+    res.status(200).json({ message: "Balance updated successfully" });
+  } catch (error) {
+    // Handle errors
+    console.error("Error updating balance:", error);
+    res.status(500).json({ error: "An error occurred while updating balance" });
   }
 };
 
