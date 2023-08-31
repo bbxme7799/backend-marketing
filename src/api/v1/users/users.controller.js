@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 export const me = async (req, res, next) => {
@@ -112,5 +113,39 @@ export const banOrUnbanUser = async (req, res, next) => {
     res
       .status(500)
       .json({ error: "An error occurred while processing the request." });
+  }
+};
+
+export const changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.currentUser.id; // Assuming you have user ID from authentication middleware
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundError("User not found");
+    }
+
+    const match = bcrypt.compareSync(currentPassword, user.password);
+    if (!match) {
+      throw new BadRequestError("Current password is incorrect");
+    }
+
+    const hashedNewPassword = bcrypt.hashSync(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        password: hashedNewPassword,
+      },
+    });
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    console.error(error);
+    next(error);
   }
 };

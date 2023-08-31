@@ -7,8 +7,38 @@ import { BadRequestException } from "../../../exceptions/bad-request.exception.j
 import crypto from "crypto";
 import { ethers } from "ethers";
 import { NotAuthorizeRequestException } from "../../../exceptions/not-authorize-request.exception.js";
+import nodemailer from "nodemailer";
 
-export const singup = async (req, res, next) => {
+export const sendVerificationEmail = async (
+  email,
+  username,
+  verificationToken
+) => {
+  const transporter = nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 587,
+    auth: {
+      user: "bbrmforwork@gmail.com",
+      pass: "dehihafodfvnluyj",
+    },
+  });
+
+  const mailOptions = {
+    from: "bbrmforwork@gmail.com",
+    to: email,
+    subject: "Verify Your Email",
+    html: `
+    <p>Dear ${username},</p>
+    <p>Thank you for registering with our platform. Please click the following link to verify your email:</p>
+    <a href="http://localhost:8000/api/auth/verify/${email}?token=${verificationToken}">Verify Email</a>
+    <p>If you didn't register, please ignore this email.</p>
+  `,
+  };
+
+  await transporter.sendMail(mailOptions);
+};
+
+export const signup = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
     const eUser = await prisma.user.findFirst({
@@ -22,34 +52,62 @@ export const singup = async (req, res, next) => {
     const salt = bcrypt.genSaltSync(10);
     const hash = bcrypt.hashSync(password, salt);
 
+    // Generate a random verification token
+    const verificationToken = crypto.randomBytes(20).toString("hex");
+
     const result = await prisma.user.create({
       data: {
         username: username,
         email: email,
         password: hash,
+        is_verified: false,
+        verificationToken: verificationToken, // Use the correct field name
       },
     });
 
-    const userJwt = jwt.sign(
-      {
-        id: result.id,
-        // email: result.email,
-        role: result.role,
-        is_banned: result.is_banned,
-      },
-      config.jwtSecretKey
-    );
+    await sendVerificationEmail(email, username, verificationToken);
 
-    req.session = {
-      jwt: userJwt,
-    };
     const { password: _, ...newObj } = result;
-    res.status(201).json({});
+    res.status(201).json({ user: newObj });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     next(error);
   }
 };
+
+export const verifyEmail = async (req, res, next) => {
+  try {
+    const { email } = req.params;
+    const { token } = req.query;
+    const user = await prisma.user.findFirst({
+      where: { email: email, verificationToken: token }, // เปรียบเทียบ token
+    });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ error: "User not found or invalid token." });
+    }
+
+    if (user.is_verified) {
+      return res.status(200).json({ message: "Email already verified." });
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        is_verified: true,
+        verificationToken: null, // อัปเดตค่า token เป็น null เมื่อยืนยันแล้ว
+      },
+    });
+
+    res.status(200).json({ message: "Email verified successfully." });
+  } catch (error) {
+    console.error(error);
+    next(error);
+  }
+};
+
 export const googleAuth = async (req, res, next) => {
   try {
     const { id, emails, photos, displayName } = req.user;
@@ -75,6 +133,7 @@ export const googleAuth = async (req, res, next) => {
             username: displayName,
             email: emails[0].value,
             google_id: id,
+            is_verified: true,
           },
         });
         const userJwt = jwt.sign(
@@ -196,6 +255,10 @@ export const signin = async (req, res, next) => {
       throw new BadRequestException("Invalid Credentials");
     }
 
+    if (!eUser.is_verified) {
+      throw new BadRequestException("Email is not verified");
+    }
+
     const userJwt = jwt.sign(
       {
         id: eUser.id,
@@ -217,6 +280,7 @@ export const signin = async (req, res, next) => {
     next(error);
   }
 };
+
 export const signout = async (req, res, next) => {
   try {
     req.session = null;

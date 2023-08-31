@@ -5,7 +5,8 @@ import {
   metamaskAuth,
   signin,
   signout,
-  singup,
+  signup,
+  verifyEmail,
 } from "./auth.controller.js";
 import { validateRequestMiddleware } from "../../../middlewares/validate-request.middleware.js";
 import {
@@ -42,8 +43,10 @@ router.post(
 router.post(
   "/signup",
   validateRequestMiddleware({ body: SignupSchema }),
-  singup
+  signup
 );
+
+router.get("/verify/:email", verifyEmail);
 router.post("/signout", signout);
 
 export { router as authRoute };

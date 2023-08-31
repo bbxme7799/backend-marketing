@@ -6,6 +6,7 @@ import {
   getUsers,
   banOrUnbanUser,
   editBalance,
+  changePassword,
 } from "./users.controller.js";
 import { roleMiddleware } from "../../../middlewares/roleMiddleware.js";
 
@@ -19,9 +20,11 @@ router.get("/getusers", jwtAuthMiddleware, roleMiddleware(1), getUsers);
 //edit balance user
 router.put("/editbalance", jwtAuthMiddleware, roleMiddleware(1), editBalance);
 
+//user
 //check status login
 router.get("/me", jwtAuthMiddleware, me);
 //user update username
 router.put("/update-username", jwtAuthMiddleware, updateUsername);
+router.put("/changePassword", jwtAuthMiddleware, changePassword);
 
 export { router as usersRoute };
