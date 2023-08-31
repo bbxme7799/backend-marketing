@@ -30,7 +30,7 @@ export const sendVerificationEmail = async (
     html: `
     <p>Dear ${username},</p>
     <p>Thank you for registering with our platform. Please click the following link to verify your email:</p>
-    <a href="http://localhost:8000/api/auth/verify/${email}?token=${verificationToken}">Verify Email</a>
+    <a href="http://localhost:3000/users/signup/verify/?email=${email}&token=${verificationToken}">Verify Email</a>
     <p>If you didn't register, please ignore this email.</p>
   `,
   };

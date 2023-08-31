@@ -7,6 +7,8 @@ import {
   banOrUnbanUser,
   editBalance,
   changePassword,
+  forgotPassword,
+  resetPassword,
 } from "./users.controller.js";
 import { roleMiddleware } from "../../../middlewares/roleMiddleware.js";
 
@@ -26,5 +28,8 @@ router.get("/me", jwtAuthMiddleware, me);
 //user update username
 router.put("/update-username", jwtAuthMiddleware, updateUsername);
 router.put("/changePassword", jwtAuthMiddleware, changePassword);
-
+// Route ลืมรหัสผ่าน
+router.post("/forgot-password", forgotPassword);
+// Route รีเซ็ตรหัสผ่าน
+router.post("/reset-password/:token", resetPassword);
 export { router as usersRoute };

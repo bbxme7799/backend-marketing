@@ -47,6 +47,7 @@ router.post(
 );
 
 router.get("/verify/:email", verifyEmail);
+
 router.post("/signout", signout);
 
 export { router as authRoute };

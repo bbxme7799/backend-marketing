@@ -24,6 +24,8 @@ model User {
   is_verified       Boolean    @default(false)
   verificationToken String?
   is_banned         Boolean    @default(false)
+  resetToken        String? // เพิ่มฟิลด์สำหรับเก็บ token สำหรับรีเซ็ตรหัสผ่าน
+  resetTokenExpiry  DateTime? // เพิ่มฟิลด์สำหรับกำหนดเวลาหมดอายุของ token สำหรับรีเซ็ตรหัสผ่าน
   created_at        DateTime   @default(now()) @db.Timestamp(6)
   updated_at        DateTime   @updatedAt
   orders            Order[]

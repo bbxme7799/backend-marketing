@@ -1,5 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import nodemailer from "nodemailer";
+import crypto from "crypto";
 
 const prisma = new PrismaClient();
 export const me = async (req, res, next) => {
@@ -134,12 +136,13 @@ export const changePassword = async (req, res, next) => {
       throw new BadRequestError("Current password is incorrect");
     }
 
-    const hashedNewPassword = bcrypt.hashSync(newPassword, 10);
+    const salt = bcrypt.genSaltSync(10);
+    const hash = bcrypt.hashSync(newPassword, salt);
 
     await prisma.user.update({
       where: { id: userId },
       data: {
-        password: hashedNewPassword,
+        password: hash,
       },
     });
 
@@ -148,4 +151,97 @@ export const changePassword = async (req, res, next) => {
     console.error(error);
     next(error);
   }
+};
+
+export const sendResetEmail = async (email, resetToken) => {
+  try {
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      auth: {
+        user: "bbrmforwork@gmail.com",
+        pass: "dehihafodfvnluyj",
+      },
+    });
+
+    const mailOptions = {
+      from: "bbrmforwork@gmail.com",
+      to: email,
+      subject: "Password Reset",
+      html: `<p>Click <a href="http://localhost:3000/users/resetpassword/?email=${email}&token=${resetToken}">here</a> to reset your password.</p>`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log("Email sent successfully");
+  } catch (error) {
+    console.error("Email sending failed:", error);
+  }
+};
+
+// สร้าง token สำหรับรีเซ็ตรหัสผ่าน
+export const generateResetToken = () => {
+  const token = crypto.randomBytes(32).toString("hex");
+  return token;
+};
+
+// controllers/authController.js
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // ตรวจสอบว่ามีผู้ใช้งานที่ใช้อีเมลนี้หรือไม่
+    const user = await prisma.user.findFirst({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    // สร้างและส่ง token สำหรับรีเซ็ตรหัสผ่านให้กับผู้ใช้
+    const resetToken = generateResetToken(); // สร้าง token ในการรีเซ็ตรหัสผ่าน
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        resetToken: resetToken,
+        resetTokenExpiry: new Date(Date.now() + 3600000), // ให้ token หมดอายุใน 1 ชั่วโมง
+      },
+    });
+
+    // ส่งอีเมลพร้อมลิงค์รีเซ็ตรหัสผ่าน
+    sendResetEmail(user.email, resetToken);
+
+    res.status(200).json({ message: "Password reset link sent successfully." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Internal server error." });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  const token = req.params.token;
+  const newPassword = req.body.newPassword;
+
+  // ค้นหาผู้ใช้จาก token
+  const user = await prisma.user.findFirst({
+    where: { resetToken: token, resetTokenExpiry: { gt: new Date() } },
+  });
+
+  if (!user) {
+    return res.status(400).json({ error: "Invalid or expired token." });
+  }
+
+  // เข้ารหัสรหัสผ่านใหม่ก่อนบันทึกลงฐานข้อมูล
+  const salt = bcrypt.genSaltSync(10);
+  const hash = bcrypt.hashSync(newPassword, salt);
+
+  // อัพเดทรหัสผ่านและลบ token
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      password: hash,
+      resetToken: null,
+      resetTokenExpiry: null,
+    },
+  });
+
+  res.status(200).json({ message: "Password reset successfully." });
 };
