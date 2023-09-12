@@ -253,3 +253,15 @@ export const getAllOrders = async (req, res, next) => {
     next(error);
   }
 };
+
+export const TotalReport = async (req, res, next) => {
+  try {
+    const total = await prisma.order.count({});
+    res.json({
+      total,
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};

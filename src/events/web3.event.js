@@ -42,6 +42,12 @@ export const transferEvent = () => {
           where: { id: user.id },
           data: { address_for_paid: null },
         });
+        await prisma.topup.create({
+          data:{amount:bath,user_id:user.id}
+        })
+        await prisma.transaction.create({
+          data: { status: "DEPOSIT", amount: bath, user_id: user.id },
+        });
       }
       console.log(event);
     }
