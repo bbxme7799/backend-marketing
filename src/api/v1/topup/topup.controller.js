@@ -20,11 +20,13 @@ export const topup = async (req, res, next) => {
 
 export const totalReport = async (req, res, next) => {
   try {
-    await prisma.topup.aggregate({
+    const result = await prisma.topup.aggregate({
       _sum: {
         amount: true,
       },
     });
+
+    res.json({ data: result._sum });
   } catch (error) {
     console.log(error);
     next(error);
