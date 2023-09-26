@@ -10,3 +10,15 @@ export const TransactionsFilter = z.object({
     z.number().positive().max(200)
   ),
 });
+
+export const WithdrawSchema = z.object({
+  amount: z.number().int(),
+  walletPublicKey: z.string().trim().min(1),
+});
+
+export const WithdrawIdSchema = z.object({
+  withdrawId: z.preprocess(
+    (a) => parseInt(z.string().parse(a)),
+    z.number().positive()
+  ),
+});

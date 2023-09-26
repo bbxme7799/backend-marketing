@@ -43,8 +43,8 @@ export const transferEvent = () => {
           data: { address_for_paid: null },
         });
         await prisma.topup.create({
-          data:{amount:bath,user_id:user.id}
-        })
+          data: { amount: bath, user_id: user.id },
+        });
         await prisma.transaction.create({
           data: { status: "DEPOSIT", amount: bath, user_id: user.id },
         });
@@ -53,3 +53,46 @@ export const transferEvent = () => {
     }
   );
 };
+
+// export const transferToCustomer = () => {
+//   const ownerAddress = "0xF66D753De15379B0B445df6956356d18A1B47e1F";
+
+//   contract.on(
+//     contract.filters.Transfer(ownerAddress, null),
+//     async (from, to, value, event) => {
+//       console.log(
+//         `Transfer event received - From: ${from}, To: ${to}, Value: ${value}`
+//       );
+//       console.log(from.log.args);
+//       const payload = from.log.args;
+//       console.log(payload[0], payload[1], payload[2]);
+//       const busdRate = await prisma.uSD_rate.findFirst();
+//       console.log(busdRate.rate, Number(payload[2]));
+//       const rateInTHB = busdRate.rate;
+//       const rate2 = rateInTHB / (1 * 10 ** 18);
+//       const bath = Number(payload[2]) * rate2;
+
+//       console.log({ bath });
+//       const eUser = await prisma.user.findFirst({
+//         where: { address_for_paid: payload[0] },
+//       });
+//       const user = await prisma.user.update({
+//         where: { id: eUser.id },
+//         data: { balance: { increment: bath } },
+//       });
+//       if (user) {
+//         await prisma.user.update({
+//           where: { id: user.id },
+//           data: { address_for_paid: null },
+//         });
+//         await prisma.topup.create({
+//           data: { amount: bath, user_id: user.id },
+//         });
+//         await prisma.transaction.create({
+//           data: { status: "DEPOSIT", amount: bath, user_id: user.id },
+//         });
+//       }
+//       console.log(event);
+//     }
+//   );
+// };

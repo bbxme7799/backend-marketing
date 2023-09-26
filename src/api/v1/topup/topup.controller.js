@@ -25,7 +25,6 @@ export const totalReport = async (req, res, next) => {
         amount: true,
       },
     });
-
     res.json({ data: result._sum });
   } catch (error) {
     console.log(error);
