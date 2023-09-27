@@ -131,6 +131,13 @@ export const changePassword = async (req, res, next) => {
       throw new NotFoundError("User not found");
     }
 
+    // เพิ่มเงื่อนไขที่ตรวจสอบว่า google_id และ address ไม่เป็นค่าว่าง
+    if (user.google_id || user.address) {
+      throw new BadRequestError(
+        "Cannot change password when google_id or address is not empty"
+      );
+    }
+
     const match = bcrypt.compareSync(currentPassword, user.password);
     if (!match) {
       throw new BadRequestError("Current password is incorrect");
