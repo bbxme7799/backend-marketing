@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 // import busdContractJson from "../contracts/busd.contract.json" assert { type: "json" };
 import busdContractJson from "../../../contracts/busd.contract.json" assert { type: "json" };
 const provider = new ethers.JsonRpcProvider(
-  "https://data-seed-prebsc-1-s1.binance.org:8545"
+  "https://bsc.getblock.io/34497ced-d5ee-4060-8a12-e99f8524db64/testnet/"
 );
 
 const contractAddress = "0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee";
