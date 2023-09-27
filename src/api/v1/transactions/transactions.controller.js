@@ -118,14 +118,14 @@ export const userRequestToWithdraw = async (req, res, next) => {
       where: { id: user.id },
     });
     if (!eUser) throw new BadRequestException("User not found.");
-    // const withdraw = await prisma.requestToWithdraw.aggregate({
-    //   where: { user_id, status: "PENDING" },
-    //   _sum: {
-    //     amount: true,
-    //   },
-    // });
+    const withdraw = await prisma.requestToWithdraw.aggregate({
+      where: { user_id: user.id, status: "PENDING" },
+      _sum: {
+        amount: true,
+      },
+    });
 
-    if (withdraw._sum + amount > eUser.balance)
+    if ((withdraw._sum.amount ?? 0) + amount > eUser.balance)
       throw new BadRequestException("Balance not enough.");
     await prisma.requestToWithdraw.create({
       data: {
