@@ -18,7 +18,7 @@ export const transferEvent = () => {
     contract.filters.Transfer(null, ownerAddress),
     async (from, to, value, event) => {
       console.log(
-        `Transfer event received - From: ${from}, To: ${to}, Value: ${value}`
+        `Transfer event received - From: ${from}, To: ${to}, Value: ${value} TxHash: ${event.transactionHash}`
       );
       console.log(from.log.args);
       const payload = from.log.args;
@@ -30,21 +30,24 @@ export const transferEvent = () => {
       const bath = Number(payload[2]) * rate2;
 
       console.log({ bath });
-      const eUser = await prisma.user.findFirst({
-        where: { address_for_paid: payload[0] },
+      const eTopup = await prisma.topup.findFirst({
+        where: { tx_hash: event.transactionHash },
       });
+      // const eUser = await prisma.user.findFirst({
+      //   where: { address_for_paid: payload[0] },
+      // });
       const user = await prisma.user.update({
-        where: { id: eUser.id },
+        where: { id: eTopup.user_id },
         data: { balance: { increment: bath } },
       });
       if (user) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { address_for_paid: null },
-        });
-        await prisma.topup.create({
-          data: { amount: bath, user_id: user.id },
-        });
+        // await prisma.user.update({
+        //   where: { id: user.id },
+        //   data: { address_for_paid: null },
+        // });
+        // await prisma.topup.create({
+        //   data: { amount: bath, user_id: user.id },
+        // });
         await prisma.transaction.create({
           data: { status: "DEPOSIT", amount: bath, user_id: user.id },
         });

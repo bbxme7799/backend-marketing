@@ -2,10 +2,13 @@ import express from "express";
 import { jwtAuthMiddleware } from "../../../middlewares/jwt-auth.middleware.js";
 import {
   adminApproveWithdraw,
+  adminGetAllDeposit,
+  adminGetAllRequestWithdraw,
+  adminGetAllTransctions,
   adminGetAllWithdraw,
   adminRejectWithdraw,
-  getTransctions,
   userGetAllRequestWithdraw,
+  userGetAllTransctions,
   userRequestToWithdraw,
 } from "./transactions.controller.js";
 import { validateRequestMiddleware } from "../../../middlewares/validate-request.middleware.js";
@@ -19,41 +22,63 @@ import {
 const router = express.Router();
 
 router.get(
-  "/",
+  "/admin",
   jwtAuthMiddleware,
   roleMiddleware(1),
   validateRequestMiddleware({ query: TransactionsFilter }),
-  getTransctions
+  adminGetAllTransctions
+);
+router.get(
+  "/",
+  jwtAuthMiddleware,
+  validateRequestMiddleware({ query: TransactionsFilter }),
+  userGetAllTransctions
+);
+
+router.get(
+  "/deposit",
+  jwtAuthMiddleware,
+  roleMiddleware(1),
+  validateRequestMiddleware({ query: TransactionsFilter }),
+  adminGetAllDeposit
 );
 router.get(
   "/withdraw",
+  jwtAuthMiddleware,
+  roleMiddleware(1),
+  validateRequestMiddleware({ query: TransactionsFilter }),
+  adminGetAllWithdraw
+);
+
+router.get(
+  "/request-withdraw",
   jwtAuthMiddleware,
   validateRequestMiddleware({ query: TransactionsFilter }),
   userGetAllRequestWithdraw
 );
 router.post(
-  "/withdraw",
+  "/request-withdraw",
   jwtAuthMiddleware,
   validateRequestMiddleware({ body: WithdrawSchema }),
   userRequestToWithdraw
 );
 
 router.get(
-  "/withdraw/admin",
+  "/request-withdraw/admin",
   jwtAuthMiddleware,
   roleMiddleware(1),
   validateRequestMiddleware({ query: TransactionsFilter }),
-  adminGetAllWithdraw
+  adminGetAllRequestWithdraw
 );
 router.post(
-  "/withdraw/:withdrawId/approve",
+  "/request-withdraw/:withdrawId/approve",
   jwtAuthMiddleware,
   roleMiddleware(1),
   validateRequestMiddleware({ params: WithdrawIdSchema }),
   adminApproveWithdraw
 );
 router.post(
-  "/withdraw/:withdrawId/reject",
+  "/request-withdraw/:withdrawId/reject",
   jwtAuthMiddleware,
   roleMiddleware(1),
   validateRequestMiddleware({ params: WithdrawIdSchema }),

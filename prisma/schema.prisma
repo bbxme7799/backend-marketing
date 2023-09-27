@@ -18,7 +18,7 @@ model User {
   password          String?             @db.VarChar(255)
   email             String?             @db.VarChar(255)
   address           String?             @db.VarChar(255)
-  address_for_paid  String?             @db.VarChar(255)
+  // address_for_paid  String?             @db.VarChar(255)
   role              Int                 @default(0)
   balance           Decimal             @default(0.00)
   is_verified       Boolean             @default(false)
@@ -123,7 +123,8 @@ model Post {
 
 model Topup {
   id        Int      @id @default(autoincrement())
-  amount    Decimal  @default(0.00)
+  // amount    Decimal  @default(0.00)
+  tx_hash   String   @db.VarChar(255)
   user      User     @relation(fields: [user_id], references: [id])
   user_id   Int
   createdAt DateTime @default(now()) @db.Timestamp(6)

@@ -3,7 +3,7 @@ import { BadRequestException } from "../../../exceptions/bad-request.exception.j
 import { withdraw as ethersWithdraw } from "../ethers/ethers.service.js";
 const prisma = new PrismaClient();
 
-export const getTransctions = async (req, res, next) => {
+export const adminGetAllTransctions = async (req, res, next) => {
   try {
     const { page, per_page } = req.query;
     const transactions = await prisma.transaction.findMany({
@@ -21,7 +21,89 @@ export const getTransctions = async (req, res, next) => {
       total_page: Math.ceil(total / per_page),
       total,
     });
-    res.json({ message: "success" });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+export const userGetAllTransctions = async (req, res, next) => {
+  try {
+    const { page, per_page } = req.query;
+    const user = req.currentUser;
+    const transactions = await prisma.transaction.findMany({
+      where: {
+        user_id: user.id,
+      },
+      include: {
+        user: true,
+      },
+      skip: (page - 1) * per_page,
+      take: per_page,
+    });
+    const total = await prisma.transaction.count({
+      where: {
+        user_id: user.id,
+      },
+    });
+    res.json({
+      data: transactions,
+      page,
+      per_page,
+      total_page: Math.ceil(total / per_page),
+      total,
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+export const adminGetAllDeposit = async (req, res, next) => {
+  try {
+    const { page, per_page } = req.query;
+    const transactions = await prisma.transaction.findMany({
+      where: { status: "DEPOSIT" },
+      include: {
+        user: true,
+      },
+      skip: (page - 1) * per_page,
+      take: per_page,
+    });
+    const total = await prisma.transaction.count({
+      where: { status: "DEPOSIT" },
+    });
+    res.json({
+      data: transactions,
+      page,
+      per_page,
+      total_page: Math.ceil(total / per_page),
+      total,
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+export const adminGetAllWithdraw = async (req, res, next) => {
+  try {
+    const { page, per_page } = req.query;
+    const transactions = await prisma.transaction.findMany({
+      where: { status: "WITHDRAW" },
+      include: {
+        user: true,
+      },
+      skip: (page - 1) * per_page,
+      take: per_page,
+    });
+    const total = await prisma.transaction.count({
+      where: { status: "WITHDRAW" },
+    });
+    res.json({
+      data: transactions,
+      page,
+      per_page,
+      total_page: Math.ceil(total / per_page),
+      total,
+    });
   } catch (error) {
     console.log(error);
     next(error);
@@ -88,7 +170,7 @@ export const userGetAllRequestWithdraw = async (req, res, next) => {
     next(error);
   }
 };
-export const adminGetAllWithdraw = async (req, res, next) => {
+export const adminGetAllRequestWithdraw = async (req, res, next) => {
   try {
     const { page, per_page } = req.query;
     const withdraws = await prisma.requestToWithdraw.findMany({

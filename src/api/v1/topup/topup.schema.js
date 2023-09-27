@@ -1,7 +1,7 @@
 import * as z from "zod";
 
 export const TopupSchema = z.object({
-  address: z.string().min(8),
+  txHash: z.string().min(8),
 });
 
 export const TopupFilter = z.object({
