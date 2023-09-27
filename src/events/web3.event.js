@@ -4,7 +4,7 @@ import busdContractJson from "../contracts/busd.contract.json" assert { type: "j
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 const provider = new ethers.JsonRpcProvider(
-  "https://data-seed-prebsc-1-s1.binance.org:8545"
+  "https://bsc.getblock.io/34497ced-d5ee-4060-8a12-e99f8524db64/testnet/"
 );
 
 const contractAddress = "0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee";
@@ -18,9 +18,9 @@ export const transferEvent = () => {
     contract.filters.Transfer(null, ownerAddress),
     async (from, to, value, event) => {
       console.log(
-        `Transfer event received - From: ${from}, To: ${to}, Value: ${value} TxHash: ${event.transactionHash}`
+        `Transfer event received - From: ${from}, To: ${to}, Value: ${value} TxHash: ${event}`
       );
-      console.log(from.log.args);
+      console.log(from.log.transactionHash);
       const payload = from.log.args;
       console.log(payload[0], payload[1], payload[2]);
       const busdRate = await prisma.uSD_rate.findFirst();
@@ -31,7 +31,7 @@ export const transferEvent = () => {
 
       console.log({ bath });
       const eTopup = await prisma.topup.findFirst({
-        where: { tx_hash: event.transactionHash },
+        where: { tx_hash: from.log.transactionHash },
       });
       // const eUser = await prisma.user.findFirst({
       //   where: { address_for_paid: payload[0] },
