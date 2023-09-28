@@ -26,6 +26,34 @@ export const adminGetAllTransctions = async (req, res, next) => {
     next(error);
   }
 };
+export const adminGetReportTransactions = async () => {
+  try {
+    const deposit = await prisma.transaction.aggregate({
+      where: { status: "DEPOSIT" },
+      _sum: {
+        amount: true,
+      },
+    });
+    const withdraw = await prisma.transaction.aggregate({
+      where: { status: "WITHDRAW" },
+      _sum: {
+        amount: true,
+      },
+    });
+    const totalDeposit = deposit._sum.amount ?? 0;
+    const totalWithdraw = withdraw._sum.amount ?? 0;
+    res.json({
+      data: {
+        totalDeposit,
+        totalWithdraw,
+        profit: totalDeposit - totalWithdraw,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
 export const userGetAllTransctions = async (req, res, next) => {
   try {
     const { page, per_page } = req.query;

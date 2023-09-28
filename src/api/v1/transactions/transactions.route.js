@@ -6,6 +6,7 @@ import {
   adminGetAllRequestWithdraw,
   adminGetAllTransctions,
   adminGetAllWithdraw,
+  adminGetReportTransactions,
   adminRejectWithdraw,
   userGetAllRequestWithdraw,
   userGetAllTransctions,
@@ -21,6 +22,12 @@ import {
 } from "./transactions.schema.js";
 const router = express.Router();
 
+router.get(
+  "/report",
+  jwtAuthMiddleware,
+  roleMiddleware(1),
+  adminGetReportTransactions
+);
 router.get(
   "/admin",
   jwtAuthMiddleware,
