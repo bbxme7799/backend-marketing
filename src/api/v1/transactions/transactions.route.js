@@ -1,5 +1,6 @@
 import express from "express";
 import { jwtAuthMiddleware } from "../../../middlewares/jwt-auth.middleware.js";
+import { roleMiddleware } from "../../../middlewares/roleMiddleware.js";
 import {
   adminApproveWithdraw,
   adminGetAllDeposit,
@@ -12,8 +13,6 @@ import {
   userRequestToWithdraw,
 } from "./transactions.controller.js";
 import { validateRequestMiddleware } from "../../../middlewares/validate-request.middleware.js";
-// import { topup, totalReport } from "./topup.controller.js";
-import { roleMiddleware } from "../../../middlewares/roleMiddleware.js";
 import {
   TransactionsFilter,
   WithdrawIdSchema,

@@ -4,10 +4,7 @@ import { ForbiddenRequestException } from "../exceptions/forbidden-request.excep
 export const roleMiddleware = (roleToCheck) => {
   return (req, res, next) => {
     const userRole = req.currentUser.role; // Assuming the authenticated user's role is stored in req.user.role
-    console.log(
-      "🚀 ~ file: roleMiddleware.js:7 ~ return ~ userRole:",
-      userRole
-    );
+    console.log("🚀 userRole:", userRole);
     if (userRole === roleToCheck) {
       next(); // User has the required role, proceed to the next middleware/handler
     } else {
