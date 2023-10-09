@@ -264,3 +264,19 @@ export const TotalReport = async (req, res, next) => {
     next(error);
   }
 };
+export const statisticReport = async (req, res, next) => {
+  try {
+    const data = await prisma.order.groupBy({
+      by: ["created_at"],
+      _sum: {
+        total: true,
+      },
+    });
+    res.json({
+      ...data,
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};

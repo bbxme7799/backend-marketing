@@ -234,6 +234,7 @@ export const adminApproveWithdraw = async (req, res, next) => {
     const busdRate = await prisma.uSD_rate.findFirst();
     const rate = (1 * 10 ** 18) / busdRate.rate;
     const toWei = rate * withdraw.amount;
+    
     await ethersWithdraw(withdraw.wallet_public_key, toWei);
     await prisma.transaction.create({
       data: {
