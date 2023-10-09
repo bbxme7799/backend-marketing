@@ -6,6 +6,7 @@ import {
   ordering,
   getAllOrders,
   TotalReport,
+  statisticReport,
 } from "./orders.controller.js";
 import { jwtAuthMiddleware } from "../../../middlewares/jwt-auth.middleware.js";
 import { OrderIdSchema } from "./orders.shema.js";
@@ -15,6 +16,7 @@ router.get("/getallorder", jwtAuthMiddleware, roleMiddleware(1), getAllOrders);
 router.post("/:userId", jwtAuthMiddleware, ordering);
 router.get("/", jwtAuthMiddleware, getMyOrders);
 router.get("/total-report", jwtAuthMiddleware, roleMiddleware(1), TotalReport);
+router.get("/statistic", jwtAuthMiddleware, roleMiddleware(1), statisticReport);
 router.get(
   "/:orderId",
   jwtAuthMiddleware,

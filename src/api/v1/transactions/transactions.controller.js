@@ -26,7 +26,7 @@ export const adminGetAllTransctions = async (req, res, next) => {
     next(error);
   }
 };
-export const adminGetReportTransactions = async () => {
+export const adminGetReportTransactions = async (req, res, next) => {
   try {
     const deposit = await prisma.transaction.aggregate({
       where: { status: "DEPOSIT" },
@@ -54,6 +54,7 @@ export const adminGetReportTransactions = async () => {
     next(error);
   }
 };
+
 export const userGetAllTransctions = async (req, res, next) => {
   try {
     const { page, per_page } = req.query;
@@ -233,6 +234,7 @@ export const adminApproveWithdraw = async (req, res, next) => {
     const busdRate = await prisma.uSD_rate.findFirst();
     const rate = (1 * 10 ** 18) / busdRate.rate;
     const toWei = rate * withdraw.amount;
+    
     await ethersWithdraw(withdraw.wallet_public_key, toWei);
     await prisma.transaction.create({
       data: {
