@@ -5,7 +5,34 @@ const prisma = new PrismaClient();
 // GET /api/posts
 export const getAllPosts = async (req, res) => {
   try {
+    const { keyword, page, perPage } = req.query;
+
+    const pageNumber = parseInt(page) || 1;
+    const itemsPerPage = parseInt(perPage) || 10;
+
+    const skip = (pageNumber - 1) * itemsPerPage;
+
+    let where = {};
+
+    if (keyword) {
+      where = {
+        OR: [
+          {
+            title: {
+              contains: keyword,
+            },
+          },
+          {
+            content: {
+              contains: keyword,
+            },
+          },
+        ],
+      };
+    }
+
     const posts = await prisma.post.findMany({
+      where,
       select: {
         id: true,
         title: true,
@@ -19,8 +46,20 @@ export const getAllPosts = async (req, res) => {
           },
         },
       },
+      skip,
+      take: itemsPerPage,
     });
-    res.status(200).json(posts);
+
+    const total = await prisma.post.count({ where });
+
+    const totalPage = Math.ceil(total / itemsPerPage);
+
+    res.status(200).json({
+      data: posts,
+      page: pageNumber,
+      per_page: itemsPerPage,
+      total_page: totalPage,
+    });
   } catch (error) {
     console.error("Error fetching posts:", error);
     res.status(500).json({ error: "An error occurred while fetching posts." });
@@ -136,5 +175,44 @@ export const editPost = async (req, res) => {
     res
       .status(500)
       .json({ error: "An error occurred while editing the post." });
+  }
+};
+
+export const deletePost = async (req, res) => {
+  const { postId } = req.params;
+
+  // ตรวจสอบว่า postId ถูกส่งมาหรือไม่
+  if (!postId) {
+    return res.status(400).json({ error: "Missing postId parameter" });
+  }
+
+  try {
+    // แปลง postId เป็นตัวเลขฐาน 10
+    const postIdAsInt = parseInt(postId, 10);
+
+    // ตรวจสอบว่าโพสต์ที่ต้องการลบมีอยู่หรือไม่
+    const existingPost = await prisma.post.findUnique({
+      where: {
+        id: postIdAsInt,
+      },
+    });
+
+    if (!existingPost) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    // ลบโพสต์
+    await prisma.post.delete({
+      where: {
+        id: postIdAsInt,
+      },
+    });
+
+    res.status(204).send(); // ส่งสถานะการลบสำเร็จ (No Content)
+  } catch (error) {
+    console.error("Error deleting post:", error);
+    res
+      .status(500)
+      .json({ error: "An error occurred while deleting the post" });
   }
 };

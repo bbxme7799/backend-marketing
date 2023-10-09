@@ -26,7 +26,7 @@ export const adminGetAllTransctions = async (req, res, next) => {
     next(error);
   }
 };
-export const adminGetReportTransactions = async () => {
+export const adminGetReportTransactions = async (req, res, next) => {
   try {
     const deposit = await prisma.transaction.aggregate({
       where: { status: "DEPOSIT" },
@@ -54,6 +54,7 @@ export const adminGetReportTransactions = async () => {
     next(error);
   }
 };
+
 export const userGetAllTransctions = async (req, res, next) => {
   try {
     const { page, per_page } = req.query;

@@ -11,12 +11,38 @@ export const resetProductSchedule = async () => {
         "https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=services"
       );
 
-      const delResult = await prisma.product.deleteMany({});
-      console.log(delResult);
-      const create = await prisma.product.createMany({
-        data: response.data,
+      // เพิ่มการค้นหาข้อมูลที่มีอยู่ในระบบ
+      const existingProducts = await prisma.product.findMany({});
+
+      // สร้าง Map ของข้อมูลที่มีอยู่ในระบบเพื่อให้ง่ายต่อการค้นหา
+      const existingProductsMap = new Map(
+        existingProducts.map((product) => [product.service, product])
+      );
+
+      // กำหนดข้อมูลที่จะถูกสร้างหรืออัปเดต
+      const dataToCreateOrUpdate = response.data.map((newProduct) => {
+        const existingProduct = existingProductsMap.get(newProduct.serviceId);
+        if (existingProduct) {
+          // ถ้าข้อมูลมีอยู่ในระบบแล้ว ให้อัปเดตข้อมูลเดิม
+          return {
+            where: { id: existingProduct.service },
+            data: newProduct,
+          };
+        } else {
+          // ถ้าข้อมูลไม่มีอยู่ในระบบ ให้สร้างข้อมูลใหม่
+          return {
+            data: newProduct,
+          };
+        }
       });
-      console.log(create);
+
+      // ให้อัปเดตหรือสร้างข้อมูล
+      const createOrUpdateResult = await prisma.product.createMany({
+        data: dataToCreateOrUpdate,
+        skipDuplicates: true, // ข้ามข้อมูลที่มีอยู่ในระบบแล้ว
+      });
+      console.log(createOrUpdateResult);
+
       const categories = await prisma.product.findMany({
         distinct: "category",
         select: {
@@ -24,11 +50,12 @@ export const resetProductSchedule = async () => {
         },
       });
 
-      await prisma.category.deleteMany({});
+      // สร้างหรืออัปเดตข้อมูลหมวดหมู่ในลักษณะเดียวกัน
       const newCat = await prisma.category.createMany({
         data: categories.map((cat) => ({
           name: cat.category,
         })),
+        skipDuplicates: true, // ข้ามข้อมูลที่มีอยู่ในระบบแล้ว
       });
       console.log(newCat);
     } catch (error) {

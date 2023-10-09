@@ -35,9 +35,9 @@ export const ordering = async (req, res, next) => {
           const response = await axios.get(
             `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=add&service=${item.product_id}&link=${item.url}&quantity=${item.quantity}`
           );
-
+          console.log("order=>", response);
           const { order, error } = response.data;
-          // console.log("order=>", response.data);
+
           return {
             ...item,
             order,
@@ -244,7 +244,6 @@ export const getAllOrders = async (req, res, next) => {
       },
     });
 
-    // ส่งข้อมูล orders กลับไปให้ Client
     res.json({
       data: ordersWithItems,
     });
