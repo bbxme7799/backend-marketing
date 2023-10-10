@@ -124,25 +124,25 @@ export const getOneMyOrder = async (req, res, next) => {
       where: { order: { user_id: id }, order_id: orderId },
     });
 
-    const newOrderItems = await Promise.all(
-      orderItems.map(async (orderItem) => {
-        if (
-          orderItem.ref_id === null ||
-          !orderItem.is_paid ||
-          orderItem.status === "Refund"
-        )
-          return orderItem;
-        //request here to get status and update
-        const response = await axios.get(
-          `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=status&order=${orderItem.ref_id}`
-        );
-        const { status } = response.data;
-        return await prisma.orderItem.update({
-          where: { id: orderItem.id },
-          data: { status: status },
-        });
-      })
-    );
+    // const newOrderItems = await Promise.all(
+    //   orderItems.map(async (orderItem) => {
+    //     if (
+    //       orderItem.ref_id === null ||
+    //       !orderItem.is_paid ||
+    //       orderItem.status === "Refund"
+    //     )
+    //       return orderItem;
+    //     //request here to get status and update
+    //     const response = await axios.get(
+    //       `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=status&order=${orderItem.ref_id}`
+    //     );
+    //     const { status } = response.data;
+    //     return await prisma.orderItem.update({
+    //       where: { id: orderItem.id },
+    //       data: { status: status },
+    //     });
+    //   })
+    // );
 
     // const refundItems = newOrderItems.filter(
     //   (orderItem) => orderItem.status === "ex refund"
@@ -166,8 +166,11 @@ export const getOneMyOrder = async (req, res, next) => {
     //   })
     // );
     res.json({
-      data: newOrderItems,
+      data: orderItems,
     });
+    // res.json({
+    //   data: newOrderItems,
+    // });
   } catch (error) {
     console.log(error);
     next(error);
@@ -176,31 +179,31 @@ export const getOneMyOrder = async (req, res, next) => {
 export const getMyOrders = async (req, res, next) => {
   try {
     const { id } = req.currentUser;
-    const orderItems = await prisma.orderItem.findMany({
-      where: { order: { user_id: id } },
-    });
+    // const orderItems = await prisma.orderItem.findMany({
+    //   where: { order: { user_id: id } },
+    // });
 
-    const newOrderItems = await Promise.all(
-      orderItems.map(async (orderItem) => {
-        // if (orderItem.ref_id === null && !orderItem.is_paid) return orderItem;
-        if (
-          orderItem.ref_id === null ||
-          !orderItem.is_paid ||
-          orderItem.status === "Refund"
-        )
-          return orderItem;
-        //request here to get status and update
-        const response = await axios.get(
-          `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=status&order=${orderItem.ref_id}`
-        );
-        const { status } = response.data;
-        // refund  refund credit to customer
-        return await prisma.orderItem.update({
-          where: { id: orderItem.id },
-          data: { status: status },
-        });
-      })
-    );
+    // const newOrderItems = await Promise.all(
+    //   orderItems.map(async (orderItem) => {
+    //     // if (orderItem.ref_id === null && !orderItem.is_paid) return orderItem;
+    //     if (
+    //       orderItem.ref_id === null ||
+    //       !orderItem.is_paid ||
+    //       orderItem.status === "Refund"
+    //     )
+    //       return orderItem;
+    //     //request here to get status and update
+    //     const response = await axios.get(
+    //       `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=status&order=${orderItem.ref_id}`
+    //     );
+    //     const { status } = response.data;
+    //     // refund  refund credit to customer
+    //     return await prisma.orderItem.update({
+    //       where: { id: orderItem.id },
+    //       data: { status: status },
+    //     });
+    //   })
+    // );
 
     // const refundItems = newOrderItems.filter(
     //   (orderItem) => orderItem.status === "ex refund"
@@ -224,7 +227,7 @@ export const getMyOrders = async (req, res, next) => {
     //   })
     // );
 
-    console.log(newOrderItems);
+    // console.log(newOrderItems);
     const orders = await prisma.order.findMany({ where: { user_id: id } });
     res.json({
       data: orders,
