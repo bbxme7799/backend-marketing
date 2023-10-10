@@ -266,14 +266,38 @@ export const TotalReport = async (req, res, next) => {
 };
 export const statisticReport = async (req, res, next) => {
   try {
-    const data = await prisma.order.groupBy({
-      by: ["created_at"],
-      _sum: {
-        total: true,
+    const orders = await prisma.order.findMany({
+      include: {
+        order_items: true,
       },
     });
+
+    // สร้างรายงานสถิติ
+    const statistics = {};
+
+    for (const order of orders) {
+      const { created_at, order_items, total } = order;
+      const createdAtDate = created_at.toDateString();
+
+      if (!statistics[createdAtDate]) {
+        statistics[createdAtDate] = {
+          created_at: createdAtDate,
+          count_order_items: 0,
+          total: 0.0, // ตั้งค่าเริ่มต้นให้เป็น 0.00
+        };
+      }
+
+      const orderItemCount = order_items.length;
+      const orderTotal = parseFloat(total); // แปลงค่า "total" เป็นชนิด Decimal
+
+      statistics[createdAtDate].count_order_items += orderItemCount;
+      statistics[createdAtDate].total += orderTotal;
+    }
+
+    const formattedData = Object.values(statistics);
+
     res.json({
-      ...data,
+      data: formattedData,
     });
   } catch (error) {
     console.log(error);

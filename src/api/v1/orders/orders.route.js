@@ -12,11 +12,11 @@ import { jwtAuthMiddleware } from "../../../middlewares/jwt-auth.middleware.js";
 import { OrderIdSchema } from "./orders.shema.js";
 import { roleMiddleware } from "../../../middlewares/roleMiddleware.js";
 const router = express.Router();
-router.get("/getallorder", getAllOrders);
+router.get("/getallorder", jwtAuthMiddleware, roleMiddleware(1), getAllOrders);
 router.post("/:userId", jwtAuthMiddleware, ordering);
 router.get("/", jwtAuthMiddleware, getMyOrders);
 router.get("/total-report", jwtAuthMiddleware, roleMiddleware(1), TotalReport);
-router.get("/statistic", jwtAuthMiddleware, roleMiddleware(1), statisticReport);
+router.get("/statistic", statisticReport);
 router.get(
   "/:orderId",
   jwtAuthMiddleware,
