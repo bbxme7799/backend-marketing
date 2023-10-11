@@ -7,12 +7,20 @@ import {
   getAllOrders,
   TotalReport,
   statisticReport,
+  buyNow,
 } from "./orders.controller.js";
 import { jwtAuthMiddleware } from "../../../middlewares/jwt-auth.middleware.js";
-import { OrderIdSchema } from "./orders.shema.js";
+import { BuyNowSchema, OrderIdSchema } from "./orders.shema.js";
 import { roleMiddleware } from "../../../middlewares/roleMiddleware.js";
+import { ProdIdSchema } from "../products/products.schema.js";
 const router = express.Router();
 router.get("/getallorder", jwtAuthMiddleware, roleMiddleware(1), getAllOrders);
+router.post(
+  "/buynow/:prodId",
+  jwtAuthMiddleware,
+  validateRequestMiddleware({ params: ProdIdSchema, body: BuyNowSchema }),
+  buyNow
+);
 router.post("/:userId", jwtAuthMiddleware, ordering);
 router.get("/", jwtAuthMiddleware, getMyOrders);
 router.get("/total-report", jwtAuthMiddleware, roleMiddleware(1), TotalReport);
