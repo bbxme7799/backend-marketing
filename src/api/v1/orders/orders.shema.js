@@ -6,3 +6,7 @@ export const OrderIdSchema = z.object({
     z.number().positive()
   ),
 });
+export const BuyNowSchema = z.object({
+  quantity: z.number().int().min(0),
+  url: z.string().url(),
+});

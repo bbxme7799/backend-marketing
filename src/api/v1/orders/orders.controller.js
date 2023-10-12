@@ -115,7 +115,6 @@ export const ordering = async (req, res, next) => {
     next(error);
   }
 };
-
 export const getOneMyOrder = async (req, res, next) => {
   try {
     const { id } = req.currentUser;
@@ -304,6 +303,64 @@ export const statisticReport = async (req, res, next) => {
     });
   } catch (error) {
     console.log(error);
+    next(error);
+  }
+};
+
+export const buyNow = async (req, res, next) => {
+  try {
+    const { prodId } = req.params;
+    const { quantity, url } = req.body;
+    const { id } = req.currentUser;
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) throw new BadRequestException("User not foud.");
+    const product = await prisma.product.findUnique({
+      where: { service: Number(prodId) },
+    });
+    if (!product) throw new BadRequestException("Product not found");
+    const total = ((product.rate * 1.5) / 1000) * quantity;
+
+    if (total > user.balance || user.balance - total < 0)
+      throw new BadRequestException("Insufficient balance");
+
+    let orderItem;
+    try {
+      const response = await axios.get(
+        `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=add&service=${product.service}&link=${url}&quantity=${quantity}`
+      );
+      const { order, error } = response.data;
+      orderItem = {
+        ...item,
+        order,
+        error: error ? true : false,
+      };
+    } catch (error) {}
+    if (!orderItem) throw new BadRequestException("Ordering not success");
+    const order = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        balance: { decrement: total },
+        orders: {
+          create: {
+            order_items: {
+              create: {
+                ref_id: orderItem?.order ? orderItem?.order : null,
+                service_name: orderItem.product.name,
+                is_paid: !orderItem.error,
+                price:
+                  ((orderItem.product.rate * 1.5) / 1000) * orderItem.quantity,
+                quantity: orderItem.quantity,
+                status: orderItem.error ? "Canceled" : "Pending",
+              },
+            },
+          },
+        },
+      },
+    });
+    res.json({
+      data: order,
+    });
+  } catch (error) {
     next(error);
   }
 };
