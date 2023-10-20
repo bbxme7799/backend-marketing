@@ -8,7 +8,7 @@ export const resetProductSchedule = async () => {
     try {
       console.log("query product");
       const response = await axios.get(
-        "https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=services"
+        "https://iplusview.store/api?key=09d21f71d09164a03081ef2c7642cc0f&action=services"
       );
 
       // เพิ่มการค้นหาข้อมูลที่มีอยู่ในระบบ

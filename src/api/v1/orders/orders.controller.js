@@ -33,7 +33,7 @@ export const ordering = async (req, res, next) => {
       items.map(async (item, index) => {
         try {
           const response = await axios.get(
-            `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=add&service=${item.product_id}&link=${item.url}&quantity=${item.quantity}`
+            `https://iplusview.store/api?key=09d21f71d09164a03081ef2c7642cc0f&action=add&service=${item.product_id}&link=${item.url}&quantity=${item.quantity}`
           );
           console.log("order=>", response);
           const { order, error } = response.data;
@@ -133,7 +133,7 @@ export const getOneMyOrder = async (req, res, next) => {
     //       return orderItem;
     //     //request here to get status and update
     //     const response = await axios.get(
-    //       `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=status&order=${orderItem.ref_id}`
+    //       `https://iplusview.store/api?key=09d21f71d09164a03081ef2c7642cc0f&action=status&order=${orderItem.ref_id}`
     //     );
     //     const { status } = response.data;
     //     return await prisma.orderItem.update({
@@ -193,7 +193,7 @@ export const getMyOrders = async (req, res, next) => {
     //       return orderItem;
     //     //request here to get status and update
     //     const response = await axios.get(
-    //       `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=status&order=${orderItem.ref_id}`
+    //       `https://iplusview.store/api?key=09d21f71d09164a03081ef2c7642cc0f&action=status&order=${orderItem.ref_id}`
     //     );
     //     const { status } = response.data;
     //     // refund  refund credit to customer
@@ -326,16 +326,19 @@ export const buyNow = async (req, res, next) => {
     let orderItem;
     try {
       const response = await axios.get(
-        `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=add&service=${product.service}&link=${url}&quantity=${quantity}`
+        `https://iplusview.store/api?key=09d21f71d09164a03081ef2c7642cc0f&action=add&service=${product.service}&link=${url}&quantity=${quantity}`
       );
+      console.log("🚀 response:", response);
       const { order, error } = response.data;
       orderItem = {
         ...item,
         order,
         error: error ? true : false,
       };
-    } catch (error) {}
-    if (!orderItem) throw new BadRequestException("Ordering not success");
+    } catch (error) {
+      console.log("buyNow ~ error:", error);
+      throw new BadRequestException(error);
+    }
     const order = await prisma.user.update({
       where: { id: user.id },
       data: {

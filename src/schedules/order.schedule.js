@@ -4,8 +4,8 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 export const refundSchedule = async () => {
   //every 1 minitue
-  cron.schedule("*/5 * * * *", async () => {
-    // cron.schedule("0 0 * * *", async () => {
+  // cron.schedule("*/ * * * *", async () => {
+  cron.schedule("0 0 * * *", async () => {
     try {
       console.log("------- start refund schedule -------");
 
@@ -40,7 +40,7 @@ export const refundSchedule = async () => {
 
           //request here to get status and update
           const response = await axios.get(
-            `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=status&order=${orderItem.ref_id}`
+            `https://iplusview.store/api?key=09d21f71d09164a03081ef2c7642cc0f&action=status&order=${orderItem.ref_id}`
           );
           const { status } = response.data;
           return await prisma.orderItem.update({

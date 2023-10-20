@@ -4,7 +4,7 @@ import busdContractJson from "../../../contracts/busd.contract.json" assert { ty
 const provider = new ethers.JsonRpcProvider(
   "https://bsc.getblock.io/34497ced-d5ee-4060-8a12-e99f8524db64/testnet/"
 );
-
+import BigNumber from "bignumber.js";
 const contractAddress = "0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee";
 const contractABI = busdContractJson;
 const signer = new ethers.Wallet(process.env.PRIVATE_KEY, provider);
