@@ -4,7 +4,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 export const refundSchedule = async () => {
   //every 1 minitue
-  cron.schedule("*/1 * * * *", async () => {
+  cron.schedule("*/5 * * * *", async () => {
     // cron.schedule("0 0 * * *", async () => {
     try {
       console.log("------- start refund schedule -------");
