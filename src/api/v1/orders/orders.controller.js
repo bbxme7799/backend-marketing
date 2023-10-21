@@ -33,11 +33,11 @@ export const ordering = async (req, res, next) => {
       items.map(async (item, index) => {
         try {
           const response = await axios.get(
-            `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=add&service=${item.product_id}&link=${item.url}&quantity=${item.quantity}`
+            `https://iplusview.store/api?key=09d21f71d09164a03081ef2c7642cc0f&action=add&service=${item.product_id}&link=${item.url}&quantity=${item.quantity}`
           );
-
+          console.log("order=>", response);
           const { order, error } = response.data;
-          // console.log("order=>", response.data);
+
           return {
             ...item,
             order,
@@ -115,7 +115,6 @@ export const ordering = async (req, res, next) => {
     next(error);
   }
 };
-
 export const getOneMyOrder = async (req, res, next) => {
   try {
     const { id } = req.currentUser;
@@ -124,25 +123,25 @@ export const getOneMyOrder = async (req, res, next) => {
       where: { order: { user_id: id }, order_id: orderId },
     });
 
-    const newOrderItems = await Promise.all(
-      orderItems.map(async (orderItem) => {
-        if (
-          orderItem.ref_id === null ||
-          !orderItem.is_paid ||
-          orderItem.status === "Refund"
-        )
-          return orderItem;
-        //request here to get status and update
-        const response = await axios.get(
-          `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=status&order=${orderItem.ref_id}`
-        );
-        const { status } = response.data;
-        return await prisma.orderItem.update({
-          where: { id: orderItem.id },
-          data: { status: status },
-        });
-      })
-    );
+    // const newOrderItems = await Promise.all(
+    //   orderItems.map(async (orderItem) => {
+    //     if (
+    //       orderItem.ref_id === null ||
+    //       !orderItem.is_paid ||
+    //       orderItem.status === "Refund"
+    //     )
+    //       return orderItem;
+    //     //request here to get status and update
+    //     const response = await axios.get(
+    //       `https://iplusview.store/api?key=09d21f71d09164a03081ef2c7642cc0f&action=status&order=${orderItem.ref_id}`
+    //     );
+    //     const { status } = response.data;
+    //     return await prisma.orderItem.update({
+    //       where: { id: orderItem.id },
+    //       data: { status: status },
+    //     });
+    //   })
+    // );
 
     // const refundItems = newOrderItems.filter(
     //   (orderItem) => orderItem.status === "ex refund"
@@ -166,8 +165,11 @@ export const getOneMyOrder = async (req, res, next) => {
     //   })
     // );
     res.json({
-      data: newOrderItems,
+      data: orderItems,
     });
+    // res.json({
+    //   data: newOrderItems,
+    // });
   } catch (error) {
     console.log(error);
     next(error);
@@ -176,31 +178,31 @@ export const getOneMyOrder = async (req, res, next) => {
 export const getMyOrders = async (req, res, next) => {
   try {
     const { id } = req.currentUser;
-    const orderItems = await prisma.orderItem.findMany({
-      where: { order: { user_id: id } },
-    });
+    // const orderItems = await prisma.orderItem.findMany({
+    //   where: { order: { user_id: id } },
+    // });
 
-    const newOrderItems = await Promise.all(
-      orderItems.map(async (orderItem) => {
-        // if (orderItem.ref_id === null && !orderItem.is_paid) return orderItem;
-        if (
-          orderItem.ref_id === null ||
-          !orderItem.is_paid ||
-          orderItem.status === "Refund"
-        )
-          return orderItem;
-        //request here to get status and update
-        const response = await axios.get(
-          `https://iplusview.store/api?key=445ffcff1322193be0a307e4a8918716&action=status&order=${orderItem.ref_id}`
-        );
-        const { status } = response.data;
-        // refund  refund credit to customer
-        return await prisma.orderItem.update({
-          where: { id: orderItem.id },
-          data: { status: status },
-        });
-      })
-    );
+    // const newOrderItems = await Promise.all(
+    //   orderItems.map(async (orderItem) => {
+    //     // if (orderItem.ref_id === null && !orderItem.is_paid) return orderItem;
+    //     if (
+    //       orderItem.ref_id === null ||
+    //       !orderItem.is_paid ||
+    //       orderItem.status === "Refund"
+    //     )
+    //       return orderItem;
+    //     //request here to get status and update
+    //     const response = await axios.get(
+    //       `https://iplusview.store/api?key=09d21f71d09164a03081ef2c7642cc0f&action=status&order=${orderItem.ref_id}`
+    //     );
+    //     const { status } = response.data;
+    //     // refund  refund credit to customer
+    //     return await prisma.orderItem.update({
+    //       where: { id: orderItem.id },
+    //       data: { status: status },
+    //     });
+    //   })
+    // );
 
     // const refundItems = newOrderItems.filter(
     //   (orderItem) => orderItem.status === "ex refund"
@@ -224,7 +226,7 @@ export const getMyOrders = async (req, res, next) => {
     //   })
     // );
 
-    console.log(newOrderItems);
+    // console.log(newOrderItems);
     const orders = await prisma.order.findMany({ where: { user_id: id } });
     res.json({
       data: orders,
@@ -244,7 +246,6 @@ export const getAllOrders = async (req, res, next) => {
       },
     });
 
-    // ส่งข้อมูล orders กลับไปให้ Client
     res.json({
       data: ordersWithItems,
     });
@@ -262,6 +263,107 @@ export const TotalReport = async (req, res, next) => {
     });
   } catch (error) {
     console.log(error);
+    next(error);
+  }
+};
+export const statisticReport = async (req, res, next) => {
+  try {
+    const orders = await prisma.order.findMany({
+      include: {
+        order_items: true,
+      },
+    });
+
+    // สร้างรายงานสถิติ
+    const statistics = {};
+
+    for (const order of orders) {
+      const { created_at, order_items, total } = order;
+      const createdAtDate = created_at.toDateString();
+
+      if (!statistics[createdAtDate]) {
+        statistics[createdAtDate] = {
+          created_at: createdAtDate,
+          count_order_items: 0,
+          total: 0.0, // ตั้งค่าเริ่มต้นให้เป็น 0.00
+        };
+      }
+
+      const orderItemCount = order_items.length;
+      const orderTotal = parseFloat(total); // แปลงค่า "total" เป็นชนิด Decimal
+
+      statistics[createdAtDate].count_order_items += orderItemCount;
+      statistics[createdAtDate].total += orderTotal;
+    }
+
+    const formattedData = Object.values(statistics);
+
+    res.json({
+      data: formattedData,
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+  }
+};
+
+export const buyNow = async (req, res, next) => {
+  try {
+    const { prodId } = req.params;
+    const { quantity, url } = req.body;
+    const { id } = req.currentUser;
+    const user = await prisma.user.findUnique({ where: { id } });
+    if (!user) throw new BadRequestException("User not foud.");
+    const product = await prisma.product.findUnique({
+      where: { service: Number(prodId) },
+    });
+    if (!product) throw new BadRequestException("Product not found");
+    const total = ((product.rate * 1.5) / 1000) * quantity;
+
+    if (total > user.balance || user.balance - total < 0)
+      throw new BadRequestException("Insufficient balance");
+
+    let orderItem;
+    try {
+      const response = await axios.get(
+        `https://iplusview.store/api?key=09d21f71d09164a03081ef2c7642cc0f&action=add&service=${product.service}&link=${url}&quantity=${quantity}`
+      );
+      console.log("🚀 response:", response);
+      const { order, error } = response.data;
+      orderItem = {
+        ...item,
+        order,
+        error: error ? true : false,
+      };
+    } catch (error) {
+      console.log("buyNow ~ error:", error);
+      throw new BadRequestException(error);
+    }
+    const order = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        balance: { decrement: total },
+        orders: {
+          create: {
+            order_items: {
+              create: {
+                ref_id: orderItem?.order ? orderItem?.order : null,
+                service_name: orderItem.product.name,
+                is_paid: !orderItem.error,
+                price:
+                  ((orderItem.product.rate * 1.5) / 1000) * orderItem.quantity,
+                quantity: orderItem.quantity,
+                status: orderItem.error ? "Canceled" : "Pending",
+              },
+            },
+          },
+        },
+      },
+    });
+    res.json({
+      data: order,
+    });
+  } catch (error) {
     next(error);
   }
 };

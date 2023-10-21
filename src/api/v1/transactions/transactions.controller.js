@@ -26,7 +26,7 @@ export const adminGetAllTransctions = async (req, res, next) => {
     next(error);
   }
 };
-export const adminGetReportTransactions = async () => {
+export const adminGetReportTransactions = async (req, res, next) => {
   try {
     const deposit = await prisma.transaction.aggregate({
       where: { status: "DEPOSIT" },
@@ -54,6 +54,7 @@ export const adminGetReportTransactions = async () => {
     next(error);
   }
 };
+
 export const userGetAllTransctions = async (req, res, next) => {
   try {
     const { page, per_page } = req.query;
@@ -152,8 +153,13 @@ export const userRequestToWithdraw = async (req, res, next) => {
         amount: true,
       },
     });
+    console.log(
+      "🚀 withdraw:",
+      Number(withdraw._sum.amount ?? 0) + Number(amount)
+    );
+    console.log("🚀~ eUser.balance:", eUser.balance);
 
-    if ((withdraw._sum.amount ?? 0) + amount > eUser.balance)
+    if (Number(withdraw._sum.amount ?? 0) + Number(amount) > eUser.balance)
       throw new BadRequestException("Balance not enough.");
     await prisma.requestToWithdraw.create({
       data: {
@@ -232,7 +238,8 @@ export const adminApproveWithdraw = async (req, res, next) => {
     if (!withdraw) throw new BadRequestException("Transaction not found.");
     const busdRate = await prisma.uSD_rate.findFirst();
     const rate = (1 * 10 ** 18) / busdRate.rate;
-    const toWei = rate * withdraw.amount;
+    const toWei = rate * Number(withdraw.amount);
+
     await ethersWithdraw(withdraw.wallet_public_key, toWei);
     await prisma.transaction.create({
       data: {
