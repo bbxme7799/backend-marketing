@@ -4,13 +4,16 @@ import busdContractJson from "../contracts/busd.contract.json" assert { type: "j
 import { PrismaClient } from "@prisma/client";
 import dotenv from "dotenv";
 const prisma = new PrismaClient();
-const provider = new ethers.JsonRpcProvider(process.env.PROVIDER_URL);
-const contractAddress = process.env.CONTRACT_ADDRESS;
+const provider = new ethers.JsonRpcProvider(
+  "https://bsc.getblock.io/34497ced-d5ee-4060-8a12-e99f8524db64/testnet/"
+);
+
+const contractAddress = "0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee";
 const contractABI = busdContractJson;
 const contract = new ethers.Contract(contractAddress, contractABI, provider);
 
-export const transferEvent = () => {
-  const ownerAddress = process.env.OWNER_ADDRESS;
+export const transferEvent = () => {  
+  const ownerAddress = "0x81C23828DB9d3cCb12a477CD756B64a16720c93f";
 
   contract.on(
     contract.filters.Transfer(null, ownerAddress),
