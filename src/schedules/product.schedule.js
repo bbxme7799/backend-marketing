@@ -3,45 +3,33 @@ import axios from "axios";
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 export const resetProductSchedule = async () => {
-  // cron.schedule("*/1 * * * *", async () => {
-  cron.schedule("0 0 * * *", async () => {
+  cron.schedule("*/1 * * * *", async () => {
+  // cron.schedule("0 0 * * *", async () => {
     try {
       console.log("query product");
       const response = await axios.get(
         "https://iplusview.store/api?key=09d21f71d09164a03081ef2c7642cc0f&action=services"
       );
 
-      // เพิ่มการค้นหาข้อมูลที่มีอยู่ในระบบ
-      const existingProducts = await prisma.product.findMany({});
+      for (const newProduct of response.data) {
+        // ตรวจสอบว่าข้อมูลมีอยู่ในระบบหรือไม่
+        const existingProduct = await prisma.product.findUnique({
+          where: { serviceId: newProduct.serviceId },
+        });
 
-      // สร้าง Map ของข้อมูลที่มีอยู่ในระบบเพื่อให้ง่ายต่อการค้นหา
-      const existingProductsMap = new Map(
-        existingProducts.map((product) => [product.service, product])
-      );
-
-      // กำหนดข้อมูลที่จะถูกสร้างหรืออัปเดต
-      const dataToCreateOrUpdate = response.data.map((newProduct) => {
-        const existingProduct = existingProductsMap.get(newProduct.serviceId);
         if (existingProduct) {
           // ถ้าข้อมูลมีอยู่ในระบบแล้ว ให้อัปเดตข้อมูลเดิม
-          return {
-            where: { id: existingProduct.service },
+          await prisma.product.update({
+            where: { serviceId: newProduct.serviceId },
             data: newProduct,
-          };
+          });
         } else {
           // ถ้าข้อมูลไม่มีอยู่ในระบบ ให้สร้างข้อมูลใหม่
-          return {
+          await prisma.product.create({
             data: newProduct,
-          };
+          });
         }
-      });
-
-      // ให้อัปเดตหรือสร้างข้อมูล
-      const createOrUpdateResult = await prisma.product.createMany({
-        data: dataToCreateOrUpdate,
-        skipDuplicates: true, // ข้ามข้อมูลที่มีอยู่ในระบบแล้ว
-      });
-      console.log(createOrUpdateResult);
+      }
 
       const categories = await prisma.product.findMany({
         distinct: "category",
@@ -50,14 +38,19 @@ export const resetProductSchedule = async () => {
         },
       });
 
-      // สร้างหรืออัปเดตข้อมูลหมวดหมู่ในลักษณะเดียวกัน
-      const newCat = await prisma.category.createMany({
-        data: categories.map((cat) => ({
-          name: cat.category,
-        })),
-        skipDuplicates: true, // ข้ามข้อมูลที่มีอยู่ในระบบแล้ว
-      });
-      console.log(newCat);
+      for (const cat of categories) {
+        // ตรวจสอบว่าหมวดหมู่มีอยู่ในระบบหรือไม่
+        const existingCategory = await prisma.category.findUnique({
+          where: { name: cat.category },
+        });
+
+        if (!existingCategory) {
+          // ถ้าหมวดหมู่ไม่มีอยู่ในระบบ ให้สร้างหมวดหมู่ใหม่
+          await prisma.category.create({
+            data: { name: cat.category },
+          });
+        }
+      }
     } catch (error) {
       console.log(error);
     }
